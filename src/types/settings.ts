@@ -4,6 +4,7 @@ export interface AppSettings {
   darkMode: boolean
   amountDecimalPlaces: number
   showDeletedAccounts: boolean
+  lastExportDate: string
   createdAt: string
   updatedAt: string
 }

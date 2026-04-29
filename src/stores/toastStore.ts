@@ -9,18 +9,25 @@ export interface ToastMessage {
   type: ToastType
 }
 
+let dismissTimer: number | undefined
+
 export const useToastStore = defineStore('toast', {
   state: () => ({
     items: [] as ToastMessage[]
   }),
   actions: {
     show(message: string, type: ToastType = 'success') {
-      const id = createId('toast')
-      this.items.push({ id, message, type })
+      const current = this.items[0]
+      const id = current?.id ?? createId('toast')
+      this.items = [{ id, message, type }]
 
-      window.setTimeout(() => {
+      if (dismissTimer) {
+        window.clearTimeout(dismissTimer)
+      }
+
+      dismissTimer = window.setTimeout(() => {
         this.remove(id)
-      }, 2400)
+      }, 1800)
     },
     remove(id: string) {
       this.items = this.items.filter((item) => item.id !== id)

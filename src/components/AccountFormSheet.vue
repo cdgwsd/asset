@@ -1,28 +1,34 @@
 <template>
-  <div class="sheet-backdrop" role="presentation" @click="$emit('close')">
-    <section class="sheet-panel" role="dialog" aria-modal="true" @click.stop>
-      <div class="sheet-handle"></div>
+  <BottomSheet labelledby="account-form-title" @close="$emit('close')">
       <header class="sheet-header">
         <div>
-          <p class="sheet-kicker">{{ mode === 'add' ? '新增账户' : '编辑账户' }}</p>
-          <h2>{{ mode === 'add' ? '添加余额账户' : '调整账户信息' }}</h2>
+          <p class="sheet-kicker icon-label">
+            <AppIcon :icon="PencilLine" :size="16" />
+            编辑账户
+          </p>
+          <h2 id="account-form-title">调整账户信息</h2>
         </div>
-        <button class="close-button" type="button" aria-label="关闭" @click="$emit('close')">×</button>
       </header>
 
       <form class="form-stack" @submit.prevent="handleSubmit">
         <label class="field">
           <span>账户名称</span>
-          <input v-model="form.name" placeholder="例如：支付宝、招商银行信用卡" />
+          <input v-model="form.name" placeholder="例如：支付宝、招商银行信用卡" enterkeyhint="next" />
         </label>
 
         <label class="field">
           <span>账户类型</span>
           <select v-model="form.typeId">
             <option v-for="accountType in accountTypes" :key="accountType.id" :value="accountType.id">
-              {{ accountType.icon }} {{ accountType.name }}
+              {{ accountType.name }}
             </option>
           </select>
+          <div v-if="selectedAccountType" class="selected-type-preview">
+            <span class="account-icon" aria-hidden="true">
+              <AppIcon :icon="selectedTypeIcon" :size="18" />
+            </span>
+            <span>{{ selectedAccountType.name }} · {{ selectedAccountType.groupName }}</span>
+          </div>
         </label>
 
         <div class="segmented">
@@ -49,41 +55,73 @@
           </select>
         </label>
 
-        <label v-if="mode === 'add'" class="field">
-          <span>当前余额</span>
-          <input v-model="balanceInput" inputmode="decimal" placeholder="例如：1000" />
-        </label>
-
         <label class="field">
           <span>图标</span>
-          <input v-model="form.icon" placeholder="可留空，默认使用账户类型图标" />
         </label>
+        <button v-if="svgIcons.length > 0" class="form-choice-row edit-icon-row" type="button" @click="iconPickerVisible = !iconPickerVisible">
+          <span class="form-choice-icon" aria-hidden="true">
+            <img v-if="selectedSvgIcon" :src="selectedSvgIcon.url" width="28" height="28" alt="" />
+            <AppIcon v-else :icon="Image" :size="20" />
+          </span>
+          <span class="form-choice-copy">
+            <strong>{{ selectedSvgIcon ? selectedSvgIcon.label : '暂无可选图标' }}</strong>
+          </span>
+          <AppIcon :icon="ChevronRight" :size="18" />
+        </button>
+        <div v-else class="form-choice-row static edit-icon-row">
+          <span class="form-choice-icon" aria-hidden="true">
+            <AppIcon :icon="Image" :size="20" />
+          </span>
+          <span class="form-choice-copy">
+            <strong>暂无可选图标</strong>
+          </span>
+          <AppIcon :icon="ChevronRight" :size="18" />
+        </div>
+
+        <div v-if="iconPickerVisible && svgIcons.length > 0" class="icon-picker-grid">
+          <button
+            v-for="icon in svgIcons"
+            :key="icon.fileName"
+            class="icon-picker-option"
+            :class="{ selected: selectedSvgIcon?.fileName === icon.fileName }"
+            type="button"
+            @click="selectSvgIcon(icon); iconPickerVisible = false"
+          >
+            <img :src="icon.url" width="36" height="36" alt="" />
+            <small>{{ icon.label }}</small>
+          </button>
+        </div>
 
         <label class="field">
           <span>备注</span>
-          <textarea v-model="form.note" rows="3" placeholder="可选"></textarea>
+          <textarea v-model="form.note" rows="3" placeholder="可选" enterkeyhint="done"></textarea>
         </label>
 
         <div class="sheet-actions">
-          <button class="secondary-button" type="button" @click="$emit('close')">取消</button>
-          <button class="primary-button" type="submit">保存</button>
+          <button class="secondary-button" type="button" :disabled="submitting" @click="$emit('close')">取消</button>
+          <button class="primary-button icon-button-text" type="submit" :disabled="submitting">
+            <AppIcon :icon="Check" />
+            <span>{{ submitting ? '保存中...' : '保存' }}</span>
+          </button>
         </div>
       </form>
-    </section>
-  </div>
+  </BottomSheet>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
+import { Check, ChevronRight, Image, PencilLine } from 'lucide-vue-next'
+import AppIcon from './AppIcon.vue'
+import BottomSheet from './BottomSheet.vue'
 import { DEFAULT_GROUPS } from '../db/defaults'
-import { createAccount, getAccountById, getAccountTypes, updateAccount } from '../services/accountService'
+import { getAccountById, getAccountTypes, updateAccount } from '../services/accountService'
 import { useToastStore } from '../stores/toastStore'
 import type { AccountCategory, AccountType } from '../types/account'
-import { parseMoneyInput } from '../utils/money'
+import { getAccountTypeIcon } from '../utils/accountIcon'
+import { getSvgIconOptions, type SvgIconOption } from '../utils/svgIcons'
 
 const props = defineProps<{
-  mode: 'add' | 'edit'
-  accountId?: string
+  accountId: string
 }>()
 
 const emit = defineEmits<{
@@ -94,7 +132,7 @@ const emit = defineEmits<{
 const toastStore = useToastStore()
 const accountTypes = ref<AccountType[]>([])
 const groupOptions = DEFAULT_GROUPS
-const balanceInput = ref('')
+const iconPickerVisible = ref(false)
 const form = reactive({
   name: '',
   typeId: '',
@@ -103,6 +141,17 @@ const form = reactive({
   icon: '',
   note: ''
 })
+const selectedAccountType = computed(() => selectedType())
+const selectedTypeIcon = computed(() => (selectedAccountType.value ? getAccountTypeIcon(selectedAccountType.value) : PencilLine))
+
+const svgIcons = getSvgIconOptions()
+const selectedSvgIcon = ref<SvgIconOption | null>(null)
+
+function selectSvgIcon(icon: SvgIconOption) {
+  selectedSvgIcon.value = selectedSvgIcon.value?.fileName === icon.fileName ? null : icon
+}
+
+const submitting = ref(false)
 
 let initializing = false
 
@@ -128,37 +177,35 @@ async function load() {
   initializing = true
   accountTypes.value = await getAccountTypes()
 
-  if (props.mode === 'edit' && props.accountId) {
-    const account = await getAccountById(props.accountId)
-    if (!account) {
-      toastStore.show('账户不存在', 'error')
-      emit('close')
-      return
-    }
+  const account = await getAccountById(props.accountId)
+  if (!account) {
+    toastStore.show('账户不存在', 'error')
+    emit('close')
+    return
+  }
 
-    form.name = account.name
-    form.typeId = account.typeId
-    form.category = account.category
-    form.groupName = account.groupName
-    form.icon = account.icon ?? ''
-    form.note = account.note ?? ''
-    balanceInput.value = String(account.currentBalance)
-  } else {
-    const firstType = accountTypes.value[0]
-    form.name = ''
-    form.typeId = firstType?.id ?? ''
-    form.category = firstType?.category ?? 'ASSET'
-    form.groupName = firstType?.groupName ?? '现金'
-    form.icon = firstType?.icon ?? ''
-    form.note = ''
-    balanceInput.value = ''
-    applyTypeDefaults(true)
+  form.name = account.name
+  form.typeId = account.typeId
+  form.category = account.category
+  form.groupName = account.groupName
+  form.icon = account.icon ?? ''
+  form.note = account.note ?? ''
+
+  if (account.icon?.endsWith('.svg')) {
+    const found = svgIcons.find((s) => s.fileName === account.icon)
+    if (found) {
+      selectedSvgIcon.value = found
+    }
   }
 
   initializing = false
 }
 
 async function handleSubmit() {
+  if (submitting.value) {
+    return
+  }
+
   const name = form.name.trim()
   if (!name) {
     toastStore.show('账户名称不能为空', 'error')
@@ -170,38 +217,23 @@ async function handleSubmit() {
     return
   }
 
+  submitting.value = true
   try {
-    if (props.mode === 'add') {
-      const balance = parseMoneyInput(balanceInput.value)
-      if (balance === null) {
-        toastStore.show('当前余额格式不正确', 'error')
-        return
-      }
-
-      await createAccount({
-        name,
-        typeId: form.typeId,
-        category: form.category,
-        groupName: form.groupName,
-        currentBalance: balance,
-        icon: form.icon,
-        note: form.note
-      })
-    } else if (props.accountId) {
-      await updateAccount(props.accountId, {
-        name,
-        typeId: form.typeId,
-        category: form.category,
-        groupName: form.groupName,
-        icon: form.icon,
-        note: form.note
-      })
-    }
+    await updateAccount(props.accountId, {
+      name,
+      typeId: form.typeId,
+      category: form.category,
+      groupName: form.groupName,
+      icon: selectedSvgIcon.value?.fileName || form.icon || undefined,
+      note: form.note
+    })
 
     toastStore.show('保存成功')
     emit('saved')
   } catch (error) {
     toastStore.show(error instanceof Error ? error.message : '保存失败', 'error')
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -209,9 +241,89 @@ watch(
   () => form.typeId,
   () => {
     if (!initializing) {
-      applyTypeDefaults(props.mode === 'add' && !form.name.trim())
+      applyTypeDefaults()
     }
   }
 )
-watch(() => [props.mode, props.accountId] as const, load, { immediate: true })
+watch(() => props.accountId, load, { immediate: true })
 </script>
+
+<style scoped>
+.edit-icon-row {
+  margin-top: 4px;
+}
+
+.icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+
+.icon-picker-option {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  padding: 10px 4px;
+  cursor: pointer;
+}
+
+.icon-picker-option.selected {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.icon-picker-option small {
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.form-choice-row {
+  display: grid;
+  width: 100%;
+  min-height: 50px;
+  grid-template-columns: 34px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  padding: 0 4px;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.form-choice-row:active {
+  background: var(--color-surface-strong);
+}
+
+.form-choice-icon {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+}
+
+.form-choice-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.form-choice-copy strong {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

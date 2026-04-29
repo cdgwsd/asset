@@ -13,6 +13,7 @@ export function createDefaultSettings(): AppSettings {
     darkMode: false,
     amountDecimalPlaces: 2,
     showDeletedAccounts: false,
+    lastExportDate: '',
     createdAt: timestamp,
     updatedAt: timestamp
   }
@@ -29,6 +30,7 @@ function normalizeSettings(settings: Partial<AppSettings>): AppSettings {
     darkMode: settings.darkMode ?? false,
     amountDecimalPlaces: settings.amountDecimalPlaces ?? 2,
     showDeletedAccounts: settings.showDeletedAccounts ?? false,
+    lastExportDate: settings.lastExportDate ?? '',
     createdAt: settings.createdAt ?? defaults.createdAt,
     updatedAt: settings.updatedAt ?? defaults.updatedAt
   }

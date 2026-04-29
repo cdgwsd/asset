@@ -2,7 +2,8 @@ import { db } from '../db'
 import { defaultAccountTypeSeeds } from '../db/defaults'
 import { getAccountById as findAccountById, getAccounts as findAccounts } from '../repositories/accountRepo'
 import { ensureSettings } from '../repositories/settingsRepo'
-import type { Account, AccountType, CreateAccountInput, UpdateAccountInput } from '../types/account'
+import { buildAssetSnapshot } from './snapshotService'
+import type { Account, AccountCategory, AccountType, CreateAccountInput, UpdateAccountInput } from '../types/account'
 import type { BalanceHistory } from '../types/balance'
 import { now, today } from '../utils/date'
 import { createId } from '../utils/id'
@@ -50,6 +51,7 @@ export async function createAccount(input: CreateAccountInput): Promise<Account>
   }
 
   const timestamp = now()
+  const changedDate = today()
   const currentBalance = normalizeMoney(input.currentBalance)
   const account: Account = {
     id: createId('account'),
@@ -76,15 +78,18 @@ export async function createAccount(input: CreateAccountInput): Promise<Account>
     newBalance: currentBalance,
     delta: currentBalance,
     changedAt: timestamp,
-    changedDate: today(),
+    changedDate,
     source: 'SYSTEM_INIT',
     note: '账户初始余额',
     createdAt: timestamp
   }
+  const accounts = await db.accounts.toArray()
+  const snapshot = buildAssetSnapshot([...accounts, account], changedDate, timestamp)
 
-  await db.transaction('rw', db.accounts, db.balanceHistory, async () => {
+  await db.transaction('rw', db.accounts, db.balanceHistory, db.assetSnapshots, async () => {
     await db.accounts.add(account)
     await db.balanceHistory.add(history)
+    await db.assetSnapshots.put(snapshot)
   })
 
   return account
@@ -101,6 +106,7 @@ export async function updateAccount(accountId: string, input: UpdateAccountInput
     throw new Error('账户类型不存在')
   }
 
+  const timestamp = now()
   const patch: Partial<Account> = {
     name: input.name.trim(),
     typeId: accountType.id,
@@ -109,10 +115,20 @@ export async function updateAccount(accountId: string, input: UpdateAccountInput
     groupName: input.groupName,
     icon: input.icon?.trim() || accountType.icon,
     note: input.note?.trim() || undefined,
-    updatedAt: now()
+    updatedAt: timestamp
   }
+  const accounts = await db.accounts.toArray()
+  const updatedAccount = { ...account, ...patch }
+  const snapshot = buildAssetSnapshot(
+    accounts.map((item) => (item.id === accountId ? updatedAccount : item)),
+    today(),
+    timestamp
+  )
 
-  await db.accounts.update(accountId, patch)
+  await db.transaction('rw', db.accounts, db.assetSnapshots, async () => {
+    await db.accounts.update(accountId, patch)
+    await db.assetSnapshots.put(snapshot)
+  })
   return { ...account, ...patch }
 }
 
@@ -122,9 +138,45 @@ export async function deleteAccount(accountId: string): Promise<void> {
     throw new Error('账户不存在')
   }
 
-  await db.accounts.update(accountId, {
+  const timestamp = now()
+  const patch: Partial<Account> = {
     isDeleted: true,
     isActive: false,
-    updatedAt: now()
+    updatedAt: timestamp
+  }
+  const accounts = await db.accounts.toArray()
+  const deletedAccount = { ...account, ...patch }
+  const snapshot = buildAssetSnapshot(
+    accounts.map((item) => (item.id === accountId ? deletedAccount : item)),
+    today(),
+    timestamp
+  )
+
+  await db.transaction('rw', db.accounts, db.assetSnapshots, async () => {
+    await db.accounts.update(accountId, patch)
+    await db.assetSnapshots.put(snapshot)
   })
+}
+
+export async function createCustomAccountType(
+  name: string,
+  category: AccountCategory,
+  groupName: string
+): Promise<AccountType> {
+  const timestamp = now()
+  const typeId = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+  const customType: AccountType = {
+    id: typeId,
+    name: name.trim(),
+    category,
+    groupName,
+    icon: category === 'LIABILITY' ? 'credit_card' : 'wallet',
+    sortOrder: 950,
+    isSystem: false,
+    createdAt: timestamp,
+    updatedAt: timestamp
+  }
+
+  await db.accountTypes.put(customType)
+  return customType
 }

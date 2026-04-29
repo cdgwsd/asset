@@ -1,4 +1,5 @@
 import { db } from '../db'
+import { buildAssetSnapshot } from './snapshotService'
 import type { BalanceHistory, UpdateBalanceInput, UpdateBalanceResult } from '../types/balance'
 import { now, today } from '../utils/date'
 import { createId } from '../utils/id'
@@ -18,6 +19,7 @@ export async function updateAccountBalance(input: UpdateBalanceInput): Promise<U
   }
 
   const timestamp = now()
+  const changedDate = today()
   const history: BalanceHistory = {
     id: createId('history'),
     accountId: account.id,
@@ -25,18 +27,33 @@ export async function updateAccountBalance(input: UpdateBalanceInput): Promise<U
     newBalance,
     delta: normalizeMoney(newBalance - oldBalance),
     changedAt: timestamp,
-    changedDate: today(),
+    changedDate,
     source: input.source,
     note: input.note?.trim() || undefined,
     createdAt: timestamp
   }
+  const accounts = await db.accounts.toArray()
+  const snapshot = buildAssetSnapshot(
+    accounts.map((item) =>
+      item.id === account.id
+        ? {
+            ...item,
+            currentBalance: newBalance,
+            updatedAt: timestamp
+          }
+        : item
+    ),
+    changedDate,
+    timestamp
+  )
 
-  await db.transaction('rw', db.accounts, db.balanceHistory, async () => {
+  await db.transaction('rw', db.accounts, db.balanceHistory, db.assetSnapshots, async () => {
     await db.accounts.update(account.id, {
       currentBalance: newBalance,
       updatedAt: timestamp
     })
     await db.balanceHistory.add(history)
+    await db.assetSnapshots.put(snapshot)
   })
 
   return { changed: true }

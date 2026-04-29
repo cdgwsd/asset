@@ -8,7 +8,8 @@ export const useSettingsStore = defineStore('settings', {
     hideAmount: false,
     darkMode: false,
     amountDecimalPlaces: 2,
-    showDeletedAccounts: false
+    showDeletedAccounts: false,
+    lastExportDate: ''
   }),
   actions: {
     apply(settings: AppSettings) {
@@ -16,6 +17,7 @@ export const useSettingsStore = defineStore('settings', {
       this.darkMode = settings.darkMode
       this.amountDecimalPlaces = settings.amountDecimalPlaces
       this.showDeletedAccounts = settings.showDeletedAccounts
+      this.lastExportDate = settings.lastExportDate
       this.loaded = true
       this.syncTheme()
     },

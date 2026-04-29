@@ -11,3 +11,38 @@ import { useToastStore } from '../stores/toastStore'
 
 const toastStore = useToastStore()
 </script>
+
+<style scoped>
+.toast-host {
+  position: fixed;
+  bottom: calc(18px + var(--safe-bottom));
+  right: 16px;
+  left: 16px;
+  z-index: 1200;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  max-width: min(100%, 360px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.88);
+  color: #ffffff;
+  padding: 10px 15px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  font-weight: 650;
+  animation: toast-in 180ms ease-out;
+}
+
+.toast.error {
+  background: rgba(198, 62, 48, 0.94);
+}
+
+.toast.info {
+  background: rgba(71, 88, 104, 0.94);
+}
+</style>

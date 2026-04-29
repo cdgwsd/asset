@@ -1,6 +1,7 @@
 import { db } from '../db'
 import { APP_VERSION, defaultAccountTypeSeeds } from '../db/defaults'
 import { createDefaultSettings } from '../repositories/settingsRepo'
+import { normalizeAssetSnapshot } from './snapshotService'
 import type { Account } from '../types/account'
 import type { ExportData } from '../types/backup'
 import type { BalanceHistory } from '../types/balance'
@@ -17,6 +18,7 @@ function assertExportData(data: unknown): asserts data is ExportData {
     !Array.isArray(candidate.accountTypes) ||
     !Array.isArray(candidate.accounts) ||
     !Array.isArray(candidate.balanceHistory) ||
+    (candidate.assetSnapshots !== undefined && !Array.isArray(candidate.assetSnapshots)) ||
     !Array.isArray(candidate.settings)
   ) {
     throw new Error('导入失败，请检查文件格式')
@@ -45,10 +47,11 @@ async function seedDefaults(): Promise<void> {
 }
 
 export async function exportData(): Promise<ExportData> {
-  const [accountTypes, accounts, balanceHistory, settings] = await Promise.all([
+  const [accountTypes, accounts, balanceHistory, assetSnapshots, settings] = await Promise.all([
     db.accountTypes.toArray(),
     db.accounts.toArray(),
     db.balanceHistory.toArray(),
+    db.assetSnapshots.toArray(),
     db.settings.toArray()
   ])
 
@@ -58,6 +61,7 @@ export async function exportData(): Promise<ExportData> {
     accountTypes,
     accounts,
     balanceHistory,
+    assetSnapshots,
     settings
   }
 }
@@ -69,11 +73,12 @@ export async function importData(data: unknown): Promise<void> {
     throw new Error('暂不支持该版本的数据文件')
   }
 
-  await db.transaction('rw', db.accountTypes, db.accounts, db.balanceHistory, db.settings, async () => {
+  await db.transaction('rw', [db.accountTypes, db.accounts, db.balanceHistory, db.assetSnapshots, db.settings], async () => {
     await Promise.all([
       db.accountTypes.clear(),
       db.accounts.clear(),
       db.balanceHistory.clear(),
+      db.assetSnapshots.clear(),
       db.settings.clear()
     ])
 
@@ -81,6 +86,7 @@ export async function importData(data: unknown): Promise<void> {
       db.accountTypes.bulkPut(data.accountTypes),
       db.accounts.bulkPut(data.accounts),
       db.balanceHistory.bulkPut(data.balanceHistory),
+      db.assetSnapshots.bulkPut((data.assetSnapshots ?? []).map(normalizeAssetSnapshot)),
       db.settings.bulkPut(data.settings)
     ])
   })
@@ -110,12 +116,34 @@ export async function exportBalanceHistoryCSV(): Promise<string> {
   return `\uFEFF${[header.map(escapeCsv), ...rows].map((row) => row.join(',')).join('\n')}`
 }
 
+export async function exportSnapshotCSV(): Promise<string> {
+  const snapshots = await db.assetSnapshots.orderBy('date').toArray()
+  const header = ['\u65E5\u671F', '\u603B\u8D44\u4EA7', '\u603B\u8D1F\u503A', '\u51C0\u8D44\u4EA7', '\u8D26\u6237\u6570', '\u8D26\u6237\u660E\u7EC6']
+  const rows = snapshots.map((snapshot) => {
+    const accountDetails = snapshot.accounts
+      .map((item) => `${item.accountName}:${item.isLiability ? '-' : ''}${item.balance}`)
+      .join('; ')
+
+    return [
+      snapshot.date,
+      snapshot.totalAssets,
+      snapshot.totalLiabilities,
+      snapshot.netAssets,
+      snapshot.accounts.length,
+      accountDetails
+    ].map(escapeCsv)
+  })
+
+  return `\uFEFF${[header.map(escapeCsv), ...rows].map((row) => row.join(',')).join('\n')}`
+}
+
 export async function clearAllData(): Promise<void> {
-  await db.transaction('rw', db.accountTypes, db.accounts, db.balanceHistory, db.settings, async () => {
+  await db.transaction('rw', [db.accountTypes, db.accounts, db.balanceHistory, db.assetSnapshots, db.settings], async () => {
     await Promise.all([
       db.accountTypes.clear(),
       db.accounts.clear(),
       db.balanceHistory.clear(),
+      db.assetSnapshots.clear(),
       db.settings.clear()
     ])
     await seedDefaults()

@@ -9,7 +9,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '现金',
     category: 'ASSET',
     groupName: '现金',
-    icon: '💵',
+    icon: 'banknote',
     sortOrder: 10,
     isSystem: true
   },
@@ -18,7 +18,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '银行卡',
     category: 'ASSET',
     groupName: '现金',
-    icon: '🏦',
+    icon: 'landmark',
     sortOrder: 20,
     isSystem: true
   },
@@ -27,7 +27,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '支付宝',
     category: 'ASSET',
     groupName: '现金',
-    icon: '🔵',
+    icon: 'wallet',
     sortOrder: 30,
     isSystem: true
   },
@@ -36,7 +36,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '微信',
     category: 'ASSET',
     groupName: '现金',
-    icon: '🟢',
+    icon: 'wallet',
     sortOrder: 40,
     isSystem: true
   },
@@ -45,7 +45,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '基金账户',
     category: 'ASSET',
     groupName: '投资',
-    icon: '📈',
+    icon: 'line_chart',
     sortOrder: 50,
     isSystem: true
   },
@@ -54,7 +54,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '证券账户',
     category: 'ASSET',
     groupName: '投资',
-    icon: '📊',
+    icon: 'trending_up',
     sortOrder: 60,
     isSystem: true
   },
@@ -63,7 +63,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '定期存款',
     category: 'ASSET',
     groupName: '现金',
-    icon: '🏛️',
+    icon: 'landmark',
     sortOrder: 70,
     isSystem: true
   },
@@ -72,7 +72,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '信用卡',
     category: 'LIABILITY',
     groupName: '信用',
-    icon: '💳',
+    icon: 'credit_card',
     sortOrder: 80,
     isSystem: true
   },
@@ -81,7 +81,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '花呗 / 白条',
     category: 'LIABILITY',
     groupName: '信用',
-    icon: '🧾',
+    icon: 'receipt_text',
     sortOrder: 90,
     isSystem: true
   },
@@ -90,7 +90,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '房贷',
     category: 'LIABILITY',
     groupName: '贷款',
-    icon: '🏠',
+    icon: 'mortgage',
     sortOrder: 100,
     isSystem: true
   },
@@ -99,7 +99,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '车贷',
     category: 'LIABILITY',
     groupName: '贷款',
-    icon: '🚗',
+    icon: 'car_loan',
     sortOrder: 110,
     isSystem: true
   },
@@ -108,7 +108,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '其他资产',
     category: 'ASSET',
     groupName: '其他',
-    icon: '📦',
+    icon: 'other_asset',
     sortOrder: 900,
     isSystem: true
   },
@@ -117,7 +117,7 @@ export const defaultAccountTypeSeeds: Array<Omit<AccountType, 'createdAt' | 'upd
     name: '其他负债',
     category: 'LIABILITY',
     groupName: '其他',
-    icon: '📌',
+    icon: 'other_liability',
     sortOrder: 910,
     isSystem: true
   }

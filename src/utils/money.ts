@@ -18,6 +18,23 @@ export function parseMoneyInput(value: string): number | null {
   return normalizeMoney(parsed)
 }
 
+export function formatMoneyInput(value: string): string {
+  const normalized = value.replace(/[^\d.]/g, '')
+  const [integer = '', ...decimalParts] = normalized.split('.')
+  const decimal = decimalParts.join('').slice(0, 2)
+  const formattedInteger = integer.replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+  if (decimalParts.length === 0) {
+    return formattedInteger || '0'
+  }
+
+  return `${formattedInteger || '0'}.${decimal}`
+}
+
+export function unformatMoneyInput(value: string): string {
+  return value.replace(/,/g, '')
+}
+
 export function formatMoney(
   value: number,
   options: {

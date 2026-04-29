@@ -22,6 +22,7 @@ export interface Account {
   currentBalance: number
   currency: 'CNY'
   icon?: string
+  customIcon?: string
   note?: string
   sortOrder: number
   isActive: boolean
@@ -37,6 +38,7 @@ export interface CreateAccountInput {
   groupName: string
   currentBalance: number
   icon?: string
+  customIcon?: string
   note?: string
 }
 
@@ -46,5 +48,6 @@ export interface UpdateAccountInput {
   category: AccountCategory
   groupName: string
   icon?: string
+  customIcon?: string
   note?: string
 }

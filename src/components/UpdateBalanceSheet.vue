@@ -1,50 +1,69 @@
 <template>
-  <div class="sheet-backdrop" role="presentation" @click="$emit('close')">
-    <section class="sheet-panel compact" role="dialog" aria-modal="true" @click.stop>
-      <div class="sheet-handle"></div>
+  <BottomSheet panel-class="compact" labelledby="update-balance-title" @close="$emit('close')">
       <header class="sheet-header">
         <div>
-          <p class="sheet-kicker">修改余额</p>
-          <h2>{{ account?.name || '账户' }}</h2>
+          <p class="sheet-kicker icon-label">
+            <AppIcon :icon="RefreshCw" :size="16" />
+            更新余额
+          </p>
+          <h2 id="update-balance-title">更新余额</h2>
         </div>
-        <button class="close-button" type="button" aria-label="关闭" @click="$emit('close')">×</button>
       </header>
 
       <form class="form-stack" @submit.prevent="handleSubmit">
+        <div v-if="account" class="balance-update-summary">
+          <div>
+            <span>账户名称</span>
+            <strong>{{ account.name }}</strong>
+          </div>
+          <div>
+            <span>当前余额</span>
+            <strong>{{ currentBalanceText }}</strong>
+          </div>
+        </div>
+
         <label class="field">
-          <span>当前余额</span>
+          <span>新余额</span>
           <input
             v-model="balanceInput"
             inputmode="decimal"
             autocomplete="off"
-            placeholder="例如：17258.14"
-            enterkeyhint="done"
+            placeholder="例如：17,258.14"
+            enterkeyhint="next"
+            @focus="balanceInput = unformatMoneyInput(balanceInput)"
+            @blur="balanceInput = formatMoneyInput(balanceInput)"
+            @input="balanceInput = sanitizeMoneyInput(balanceInput)"
           />
         </label>
 
         <label class="field">
           <span>备注，可选</span>
-          <input v-model="note" placeholder="例如：月底更新" />
+          <input v-model="note" placeholder="例如：月底更新" enterkeyhint="done" />
         </label>
 
         <p v-if="account?.category === 'LIABILITY'" class="helper-text">负债账户也输入正数，例如信用卡欠款 3000。</p>
 
         <div class="sheet-actions">
-          <button class="secondary-button" type="button" @click="$emit('close')">取消</button>
-          <button class="primary-button" type="submit">保存</button>
+          <button class="secondary-button" type="button" :disabled="submitting" @click="$emit('close')">取消</button>
+          <button class="primary-button icon-button-text" type="submit" :disabled="submitting">
+            <AppIcon :icon="Check" />
+            <span>{{ submitting ? '保存中...' : '保存' }}</span>
+          </button>
         </div>
       </form>
-    </section>
-  </div>
+  </BottomSheet>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { Check, RefreshCw } from 'lucide-vue-next'
+import AppIcon from './AppIcon.vue'
+import BottomSheet from './BottomSheet.vue'
 import { getAccountById } from '../services/accountService'
 import { updateAccountBalance } from '../services/balanceService'
 import { useToastStore } from '../stores/toastStore'
 import type { Account } from '../types/account'
-import { parseMoneyInput } from '../utils/money'
+import { formatAccountBalance, formatMoneyInput, parseMoneyInput, unformatMoneyInput } from '../utils/money'
 
 const props = defineProps<{
   accountId: string
@@ -59,6 +78,7 @@ const toastStore = useToastStore()
 const account = ref<Account | null>(null)
 const balanceInput = ref('')
 const note = ref('')
+const submitting = ref(false)
 
 async function loadAccount() {
   account.value = (await getAccountById(props.accountId)) ?? null
@@ -67,6 +87,10 @@ async function loadAccount() {
 }
 
 async function handleSubmit() {
+  if (submitting.value) {
+    return
+  }
+
   if (!account.value) {
     toastStore.show('账户不存在', 'error')
     return
@@ -78,6 +102,7 @@ async function handleSubmit() {
     return
   }
 
+  submitting.value = true
   try {
     const result = await updateAccountBalance({
       accountId: props.accountId,
@@ -86,12 +111,30 @@ async function handleSubmit() {
       source: 'MANUAL_UPDATE'
     })
 
-    toastStore.show(result.changed ? '保存成功' : '余额未变化', result.changed ? 'success' : 'info')
+    toastStore.show(result.changed ? '余额已更新' : '余额未变化', result.changed ? 'success' : 'info')
     emit('saved')
   } catch (error) {
     toastStore.show(error instanceof Error ? error.message : '保存失败', 'error')
+  } finally {
+    submitting.value = false
   }
 }
+
+function sanitizeMoneyInput(value: string): string {
+  const normalized = value.replace(/[^\d.]/g, '')
+  const [integer = '', ...decimalParts] = normalized.split('.')
+  const decimal = decimalParts.join('').slice(0, 2)
+
+  return decimalParts.length > 0 ? `${integer}.${decimal}` : integer
+}
+
+const currentBalanceText = computed(() => {
+  if (!account.value) {
+    return ''
+  }
+
+  return formatAccountBalance(account.value.currentBalance, account.value.category)
+})
 
 watch(() => props.accountId, loadAccount, { immediate: true })
 </script>

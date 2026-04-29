@@ -3,7 +3,11 @@ import type { AccountCategory } from './account'
 export interface AccountRowView {
   accountId: string
   name: string
+  typeId: string
+  typeName: string
+  groupName: string
   icon?: string
+  customIcon?: string
   category: AccountCategory
   balance: number
   displayBalance: string

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 export type ActiveSheet =
   | 'NONE'
+  | 'SELECT_ACCOUNT_TYPE'
   | 'ADD_ACCOUNT'
   | 'EDIT_ACCOUNT'
   | 'ACCOUNT_ACTION'

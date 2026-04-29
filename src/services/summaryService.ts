@@ -43,7 +43,11 @@ export async function getHomeSummary(options: { showDeleted?: boolean } = {}): P
     const row: AccountRowView = {
       accountId: account.id,
       name: account.name,
+      typeId: account.typeId,
+      typeName: account.typeName,
+      groupName: account.groupName,
       icon: account.icon,
+      customIcon: account.customIcon,
       category: account.category,
       balance: account.currentBalance,
       displayBalance: formatAccountBalance(account.currentBalance, account.category),
