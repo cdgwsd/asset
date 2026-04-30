@@ -3,7 +3,7 @@ import { buildAssetSnapshot } from './snapshotService'
 import type { BalanceHistory, UpdateBalanceInput, UpdateBalanceResult } from '../types/balance'
 import { now, today } from '../utils/date'
 import { createId } from '../utils/id'
-import { normalizeMoney } from '../utils/money'
+import { assertMoneyWithinLimit, normalizeMoney } from '../utils/money'
 
 export async function updateAccountBalance(input: UpdateBalanceInput): Promise<UpdateBalanceResult> {
   const account = await db.accounts.get(input.accountId)
@@ -12,7 +12,7 @@ export async function updateAccountBalance(input: UpdateBalanceInput): Promise<U
   }
 
   const oldBalance = account.currentBalance
-  const newBalance = normalizeMoney(input.newBalance)
+  const newBalance = assertMoneyWithinLimit(input.newBalance)
 
   if (oldBalance === newBalance) {
     return {

@@ -37,9 +37,11 @@
             autocomplete="off"
             placeholder="例如：17,258.14"
             enterkeyhint="next"
-            @focus="balanceInput = unformatMoneyInput(balanceInput)"
-            @blur="balanceInput = formatMoneyInput(balanceInput)"
-            @input="balanceInput = sanitizeMoneyInput(balanceInput)"
+            @beforeinput="handleMoneyBeforeInput"
+            @paste="handleMoneyPaste"
+            @focus="handleMoneyFocus"
+            @blur="handleMoneyBlur"
+            @input="handleMoneyInput"
           />
         </label>
 
@@ -66,7 +68,15 @@ import { updateAccountBalance } from '../services/balanceService'
 import { useToastStore } from '../stores/toastStore'
 import type { Account } from '../types/account'
 import type { UpdateBalanceResult } from '../types/balance'
-import { formatAccountBalance, formatMoneyInput, parseMoneyInput, unformatMoneyInput } from '../utils/money'
+import {
+  applyMoneyInputChange,
+  formatAccountBalance,
+  formatMoneyInput,
+  isMoneyInputDraftAllowed,
+  normalizeMoneyInputDraft,
+  parseMoneyInput,
+  unformatMoneyInput
+} from '../utils/money'
 
 const props = withDefaults(
   defineProps<{
@@ -90,10 +100,12 @@ const toastStore = useToastStore()
 const account = ref<Account | null>(null)
 const balanceInput = ref('')
 const submitting = ref(false)
+let lastValidBalanceInput = ''
 
 async function loadAccount() {
   account.value = (await getAccountById(props.accountId)) ?? null
   balanceInput.value = account.value ? String(account.value.currentBalance) : ''
+  lastValidBalanceInput = balanceInput.value
 }
 
 async function handleSubmit() {
@@ -129,12 +141,65 @@ async function handleSubmit() {
   }
 }
 
-function sanitizeMoneyInput(value: string): string {
-  const normalized = value.replace(/[^\d.]/g, '')
-  const [integer = '', ...decimalParts] = normalized.split('.')
-  const decimal = decimalParts.join('').slice(0, 2)
+function setBalanceInputValue(input: HTMLInputElement, value: string, cursorPosition = value.length) {
+  input.value = value
+  balanceInput.value = value
+  lastValidBalanceInput = value
 
-  return decimalParts.length > 0 ? `${integer}.${decimal}` : integer
+  if (document.activeElement === input) {
+    window.requestAnimationFrame(() => {
+      input.setSelectionRange(cursorPosition, cursorPosition)
+    })
+  }
+}
+
+function handleMoneyBeforeInput(event: InputEvent) {
+  if (event.isComposing) {
+    return
+  }
+
+  if (event.inputType.startsWith('delete') || event.inputType.startsWith('history')) {
+    return
+  }
+
+  if (event.inputType === 'insertFromPaste') {
+    return
+  }
+
+  const input = event.target as HTMLInputElement
+  const nextValue = applyMoneyInputChange(input.value, input.selectionStart, input.selectionEnd, event.data ?? '')
+  if (!isMoneyInputDraftAllowed(nextValue)) {
+    event.preventDefault()
+  }
+}
+
+function handleMoneyPaste(event: ClipboardEvent) {
+  const input = event.target as HTMLInputElement
+  const pastedText = event.clipboardData?.getData('text') ?? ''
+  const nextValue = normalizeMoneyInputDraft(
+    applyMoneyInputChange(input.value, input.selectionStart, input.selectionEnd, pastedText),
+    lastValidBalanceInput
+  )
+
+  event.preventDefault()
+  setBalanceInputValue(input, nextValue)
+}
+
+function handleMoneyInput(event: Event) {
+  const input = event.target as HTMLInputElement
+  const cursorPosition = input.selectionStart ?? input.value.length
+  const nextValue = normalizeMoneyInputDraft(input.value, lastValidBalanceInput)
+  setBalanceInputValue(input, nextValue, Math.min(cursorPosition, nextValue.length))
+}
+
+function handleMoneyFocus(event: FocusEvent) {
+  const input = event.target as HTMLInputElement
+  setBalanceInputValue(input, unformatMoneyInput(input.value))
+}
+
+function handleMoneyBlur(event: FocusEvent) {
+  const input = event.target as HTMLInputElement
+  setBalanceInputValue(input, formatMoneyInput(input.value || '0'))
 }
 
 const currentBalanceText = computed(() => {

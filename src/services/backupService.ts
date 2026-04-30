@@ -8,7 +8,7 @@ import type { BalanceChangeSource, BalanceHistory } from '../types/balance'
 import type { AppSettings } from '../types/settings'
 import type { AccountSnapshotItem, AssetSnapshot } from '../types/snapshot'
 import { now, today } from '../utils/date'
-import { normalizeMoney } from '../utils/money'
+import { isMoneyWithinLimit, normalizeMoney } from '../utils/money'
 
 const BACKUP_APP_ID = 'asset-wallet'
 const BACKUP_SCHEMA = 'asset-wallet.backup'
@@ -37,6 +37,15 @@ class BackupImportError extends Error {
     super(message)
     this.name = 'BackupImportError'
   }
+}
+
+function assertImportedMoneyWithinLimit(value: number): number {
+  const normalized = normalizeMoney(value)
+  if (!isMoneyWithinLimit(normalized)) {
+    throw new BackupImportError('文件中的金额超过 1 亿，未覆盖当前数据')
+  }
+
+  return normalized
 }
 
 function isRecord(value: unknown): value is LooseRecord {
@@ -93,11 +102,7 @@ function toNumberValue(value: unknown, fallback = 0): number {
 }
 
 function toMoneyValue(value: unknown, fallback = 0): number {
-  return normalizeMoney(Math.abs(toNumberValue(value, fallback)))
-}
-
-function toSignedMoneyValue(value: unknown, fallback = 0): number {
-  return normalizeMoney(toNumberValue(value, fallback))
+  return assertImportedMoneyWithinLimit(toNumberValue(value, fallback))
 }
 
 function toIntegerValue(value: unknown, fallback = 0): number {
@@ -346,7 +351,7 @@ function normalizeBalanceHistory(
     accountId,
     oldBalance,
     newBalance,
-    delta: toSignedMoneyValue(firstValue(value, ['delta', 'changeAmount']), newBalance - oldBalance),
+    delta: normalizeMoney(newBalance - oldBalance),
     changedAt,
     changedDate: toDateString(firstValue(value, ['changedDate', 'date']), changedAt.slice(0, 10)),
     source: normalizeHistorySource(firstValue(value, ['source', 'changeSource'])),
@@ -388,8 +393,9 @@ function normalizeAssetSnapshotRecord(value: unknown, index: number, timestamp: 
   const computedLiabilities = accounts
     .filter((account) => account.isLiability)
     .reduce((sum, account) => normalizeMoney(sum + account.balance), 0)
-  const totalAssets = toMoneyValue(firstValue(value, ['totalAssets', 'assets']), computedAssets)
-  const totalLiabilities = toMoneyValue(firstValue(value, ['totalLiabilities', 'liabilities']), computedLiabilities)
+  const totalAssets = accounts.length > 0 ? computedAssets : Math.abs(toMoneyValue(firstValue(value, ['totalAssets', 'assets']), 0))
+  const totalLiabilities =
+    accounts.length > 0 ? computedLiabilities : Math.abs(toMoneyValue(firstValue(value, ['totalLiabilities', 'liabilities']), 0))
 
   return {
     id: toStringValue(firstValue(value, ['id', 'snapshotId']), getSnapshotId(snapshotDate) || `snapshot_imported_${index + 1}`),
@@ -397,7 +403,10 @@ function normalizeAssetSnapshotRecord(value: unknown, index: number, timestamp: 
     createdAt,
     totalAssets,
     totalLiabilities,
-    netAssets: toSignedMoneyValue(firstValue(value, ['netAssets', 'netAsset']), totalAssets - totalLiabilities),
+    netAssets:
+      accounts.length > 0
+        ? normalizeMoney(totalAssets - totalLiabilities)
+        : toMoneyValue(firstValue(value, ['netAssets', 'netAsset']), totalAssets - totalLiabilities),
     accounts
   }
 }

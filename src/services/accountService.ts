@@ -7,7 +7,7 @@ import type { Account, AccountCategory, AccountType, CreateAccountInput, UpdateA
 import type { BalanceHistory } from '../types/balance'
 import { now, today } from '../utils/date'
 import { createId } from '../utils/id'
-import { normalizeMoney } from '../utils/money'
+import { assertMoneyWithinLimit } from '../utils/money'
 
 export async function initDefaultAccountTypes(): Promise<void> {
   const existingKeys = await db.accountTypes.toCollection().primaryKeys()
@@ -52,7 +52,7 @@ export async function createAccount(input: CreateAccountInput): Promise<Account>
 
   const timestamp = now()
   const changedDate = today()
-  const currentBalance = normalizeMoney(input.currentBalance)
+  const currentBalance = assertMoneyWithinLimit(input.currentBalance)
   const account: Account = {
     id: createId('account'),
     name: input.name.trim(),

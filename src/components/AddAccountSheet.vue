@@ -89,9 +89,11 @@
           placeholder="初始化余额"
           autocomplete="off"
           enterkeyhint="next"
-          @focus="balanceInput = unformatMoneyInput(balanceInput)"
-          @blur="balanceInput = formatMoneyInput(balanceInput)"
-          @input="balanceInput = sanitizeMoneyInput(balanceInput)"
+          @beforeinput="handleMoneyBeforeInput"
+          @paste="handleMoneyPaste"
+          @focus="handleMoneyFocus"
+          @blur="handleMoneyBlur"
+          @input="handleMoneyInput"
         />
       </label>
 
@@ -143,7 +145,14 @@ import { createAccount, getAccountTypes } from '../services/accountService'
 import { getSvgIconOptions, type SvgIconOption } from '../utils/svgIcons'
 import { useToastStore } from '../stores/toastStore'
 import type { AccountType } from '../types/account'
-import { formatMoneyInput, parseMoneyInput, unformatMoneyInput } from '../utils/money'
+import {
+  applyMoneyInputChange,
+  formatMoneyInput,
+  isMoneyInputDraftAllowed,
+  normalizeMoneyInputDraft,
+  parseMoneyInput,
+  unformatMoneyInput
+} from '../utils/money'
 
 const props = withDefaults(
   defineProps<{
@@ -173,6 +182,7 @@ const nameInput = ref('')
 const balanceInput = ref('')
 const noteInput = ref('')
 const submitting = ref(false)
+let lastValidBalanceInput = ''
 
 const svgIcons = getSvgIconOptions()
 const selectedSvgIcon = ref<SvgIconOption | null>(svgIcons.find((i) => i.fileName === '钱包.svg') ?? null)
@@ -234,12 +244,65 @@ function finishTypeSheetClose() {
   typeSheetClosing.value = false
 }
 
-function sanitizeMoneyInput(value: string): string {
-  const normalized = value.replace(/[^\d.]/g, '')
-  const [integer = '', ...decimalParts] = normalized.split('.')
-  const decimal = decimalParts.join('').slice(0, 2)
+function setBalanceInputValue(input: HTMLInputElement, value: string, cursorPosition = value.length) {
+  input.value = value
+  balanceInput.value = value
+  lastValidBalanceInput = value
 
-  return decimalParts.length > 0 ? `${integer}.${decimal}` : integer
+  if (document.activeElement === input) {
+    window.requestAnimationFrame(() => {
+      input.setSelectionRange(cursorPosition, cursorPosition)
+    })
+  }
+}
+
+function handleMoneyBeforeInput(event: InputEvent) {
+  if (event.isComposing) {
+    return
+  }
+
+  if (event.inputType.startsWith('delete') || event.inputType.startsWith('history')) {
+    return
+  }
+
+  if (event.inputType === 'insertFromPaste') {
+    return
+  }
+
+  const input = event.target as HTMLInputElement
+  const nextValue = applyMoneyInputChange(input.value, input.selectionStart, input.selectionEnd, event.data ?? '')
+  if (!isMoneyInputDraftAllowed(nextValue)) {
+    event.preventDefault()
+  }
+}
+
+function handleMoneyPaste(event: ClipboardEvent) {
+  const input = event.target as HTMLInputElement
+  const pastedText = event.clipboardData?.getData('text') ?? ''
+  const nextValue = normalizeMoneyInputDraft(
+    applyMoneyInputChange(input.value, input.selectionStart, input.selectionEnd, pastedText),
+    lastValidBalanceInput
+  )
+
+  event.preventDefault()
+  setBalanceInputValue(input, nextValue)
+}
+
+function handleMoneyInput(event: Event) {
+  const input = event.target as HTMLInputElement
+  const cursorPosition = input.selectionStart ?? input.value.length
+  const nextValue = normalizeMoneyInputDraft(input.value, lastValidBalanceInput)
+  setBalanceInputValue(input, nextValue, Math.min(cursorPosition, nextValue.length))
+}
+
+function handleMoneyFocus(event: FocusEvent) {
+  const input = event.target as HTMLInputElement
+  setBalanceInputValue(input, unformatMoneyInput(input.value))
+}
+
+function handleMoneyBlur(event: FocusEvent) {
+  const input = event.target as HTMLInputElement
+  setBalanceInputValue(input, formatMoneyInput(input.value || '0'))
 }
 
 async function handleSubmit() {
