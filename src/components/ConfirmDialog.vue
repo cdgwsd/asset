@@ -57,7 +57,7 @@ defineEmits<{
   padding: 22px;
   background: rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(12px);
-  animation: overlay-in 180ms ease-out;
+  animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
 }
 
 .confirm-dialog {
@@ -66,7 +66,8 @@ defineEmits<{
   background: var(--color-surface);
   padding: 22px;
   box-shadow: var(--shadow-card);
-  animation: dialog-in 160ms ease-out;
+  animation: dialog-in var(--transition-dialog) var(--ease-standard) backwards;
+  will-change: transform, opacity;
 }
 
 .dialog-actions {

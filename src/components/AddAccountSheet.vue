@@ -3,7 +3,10 @@
     panel-class="add-account-panel"
     content-class="add-account-sheet-content"
     labelledby="add-account-title"
+    :hide-overlay="hideOverlay"
+    :closing="closing"
     @close="$emit('abandon')"
+    @after-close="$emit('after-close')"
   >
     <header class="add-account-header">
       <button class="icon-button" type="button" aria-label="返回" @click="$emit('abandon')">
@@ -14,7 +17,7 @@
     <form class="add-account-form" @submit.prevent="handleSubmit">
       <h2 id="add-account-title">添加新的账户</h2>
 
-      <button class="form-choice-row" type="button" @click="typeSheetVisible = true">
+      <button class="form-choice-row" type="button" @click="openTypeSheet">
         <span class="form-choice-icon" aria-hidden="true">
           <AppIcon :icon="selectedChoice.icon" :size="22" />
         </span>
@@ -112,7 +115,9 @@
 
   <AccountTypeSheet
     v-if="typeSheetVisible"
-    @close="typeSheetVisible = false"
+    :closing="typeSheetClosing"
+    @after-close="finishTypeSheetClose"
+    @close="finishTypeSheetClose"
     @select="handleTypeSelected"
   />
 </template>
@@ -140,12 +145,21 @@ import { useToastStore } from '../stores/toastStore'
 import type { AccountType } from '../types/account'
 import { formatMoneyInput, parseMoneyInput, unformatMoneyInput } from '../utils/money'
 
-const props = defineProps<{
-  initialType: AccountTypeChoiceKey
-}>()
+const props = withDefaults(
+  defineProps<{
+    initialType: AccountTypeChoiceKey
+    hideOverlay?: boolean
+    closing?: boolean
+  }>(),
+  {
+    hideOverlay: false,
+    closing: false
+  }
+)
 
 const emit = defineEmits<{
   abandon: []
+  'after-close': []
   saved: []
 }>()
 
@@ -153,6 +167,7 @@ const toastStore = useToastStore()
 const accountTypes = ref<AccountType[]>([])
 const selectedTypeKey = ref<AccountTypeChoiceKey>(props.initialType)
 const typeSheetVisible = ref(false)
+const typeSheetClosing = ref(false)
 const iconPickerVisible = ref(false)
 const nameInput = ref('')
 const balanceInput = ref('')
@@ -202,7 +217,21 @@ const selectedChoiceGroupName = computed(() => {
 
 function handleTypeSelected(key: AccountTypeChoiceKey) {
   selectedTypeKey.value = key
+  closeTypeSheet()
+}
+
+function openTypeSheet() {
+  typeSheetClosing.value = false
+  typeSheetVisible.value = true
+}
+
+function closeTypeSheet() {
+  typeSheetClosing.value = true
+}
+
+function finishTypeSheetClose() {
   typeSheetVisible.value = false
+  typeSheetClosing.value = false
 }
 
 function sanitizeMoneyInput(value: string): string {

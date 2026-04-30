@@ -1,5 +1,12 @@
 <template>
-  <BottomSheet panel-class="settings-panel" labelledby="settings-title" @close="$emit('close')">
+  <BottomSheet
+    panel-class="settings-panel"
+    labelledby="settings-title"
+    :hide-overlay="hideOverlay"
+    :closing="closing"
+    @close="$emit('close')"
+    @after-close="$emit('after-close')"
+  >
       <header class="sheet-header">
         <div>
           <p class="sheet-kicker icon-label">
@@ -109,16 +116,18 @@
       </section>
   </BottomSheet>
 
-  <ConfirmDialog
-    v-if="confirmAction"
-    :title="confirmAction === 'import' ? '确认导入数据？' : '确认清空全部数据？'"
-    :message="confirmMessage"
-    :confirm-text="confirmAction === 'import' ? '确认导入' : '确认清空'"
-    :busy="importing || clearing"
-    danger
-    @cancel="cancelConfirm"
-    @confirm="handleConfirm"
-  />
+  <Transition name="dialog-pop">
+    <ConfirmDialog
+      v-if="confirmAction"
+      :title="confirmAction === 'import' ? '确认导入数据？' : '确认清空全部数据？'"
+      :message="confirmMessage"
+      :confirm-text="confirmAction === 'import' ? '确认导入' : '确认清空'"
+      :busy="importing || clearing"
+      danger
+      @cancel="cancelConfirm"
+      @confirm="handleConfirm"
+    />
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -152,8 +161,20 @@ import { downloadTextFile, readJsonFile } from '../utils/file'
 
 const emit = defineEmits<{
   close: []
+  'after-close': []
   changed: []
 }>()
+
+withDefaults(
+  defineProps<{
+    hideOverlay?: boolean
+    closing?: boolean
+  }>(),
+  {
+    hideOverlay: false,
+    closing: false
+  }
+)
 
 const settingsStore = useSettingsStore()
 const toastStore = useToastStore()

@@ -1,5 +1,12 @@
 <template>
-  <BottomSheet panel-class="trend-panel" labelledby="trend-title" @close="$emit('close')">
+  <BottomSheet
+    panel-class="trend-panel"
+    labelledby="trend-title"
+    :hide-overlay="hideOverlay"
+    :closing="closing"
+    @close="$emit('close')"
+    @after-close="$emit('after-close')"
+  >
       <header class="sheet-header">
         <div>
           <p class="sheet-kicker icon-label">
@@ -58,13 +65,22 @@ import type { NetAssetTrendPoint, TrendRange } from '../types/trend'
 import { formatShortDate } from '../utils/date'
 import { formatMoney } from '../utils/money'
 
-const props = defineProps<{
-  hideAmount: boolean
-  decimals: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    hideAmount: boolean
+    decimals: number
+    hideOverlay?: boolean
+    closing?: boolean
+  }>(),
+  {
+    hideOverlay: false,
+    closing: false
+  }
+)
 
 defineEmits<{
   close: []
+  'after-close': []
 }>()
 
 const ranges: Array<{ label: string; value: TrendRange }> = [

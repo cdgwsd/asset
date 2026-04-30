@@ -4,11 +4,11 @@
       <section
         ref="panelRef"
         class="bottom-sheet-panel"
-        :class="[panelClass, { dragging: isDragging, closing }]"
+        :class="[panelClass, { dragging: isDragging, closing: isClosing }]"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="labelledby"
-        :style="{ transform: `translateY(${dragY}px)` }"
+        :style="{ '--sheet-drag-y': `${dragY}px` }"
         @click.stop
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
@@ -25,18 +25,18 @@
     <div
       v-else
       class="bottom-sheet-overlay"
-      :class="{ closing }"
+      :class="{ closing: isClosing }"
       role="presentation"
       @click="emitClose"
     >
       <section
         ref="panelRef"
         class="bottom-sheet-panel"
-        :class="[panelClass, { dragging: isDragging, closing }]"
+        :class="[panelClass, { dragging: isDragging, closing: isClosing }]"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="labelledby"
-        :style="{ transform: `translateY(${dragY}px)` }"
+        :style="{ '--sheet-drag-y': `${dragY}px` }"
         @click.stop
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
@@ -54,26 +54,29 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { lockBodyScroll, unlockBodyScroll } from '../utils/scrollLock'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     panelClass?: string
     contentClass?: string
     labelledby?: string
     hideOverlay?: boolean
+    closing?: boolean
   }>(),
   {
     panelClass: '',
     contentClass: '',
     labelledby: undefined,
-    hideOverlay: false
+    hideOverlay: false,
+    closing: false
   }
 )
 
 const emit = defineEmits<{
   close: []
+  'after-close': []
 }>()
 
 const panelRef = ref<HTMLElement | null>(null)
@@ -82,30 +85,46 @@ const startY = ref(0)
 const dragY = ref(0)
 const isDragging = ref(false)
 const canDrag = ref(false)
-const closing = ref(false)
+const internalClosing = ref(false)
+const closeCompleted = ref(false)
+const isClosing = computed(() => props.closing || internalClosing.value)
 
 function panelHeight(): number {
   return panelRef.value?.offsetHeight ?? window.innerHeight * 0.8
 }
 
 function emitClose() {
-  if (closing.value) {
+  if (isClosing.value) {
     return
   }
 
-  closing.value = true
+  closeCompleted.value = false
+  internalClosing.value = true
   isDragging.value = false
-  dragY.value = panelHeight()
+  dragY.value = 0
 }
 
 function onTransitionEnd(event: TransitionEvent) {
-  if (closing.value && event.propertyName === 'transform') {
+  if (
+    event.target !== panelRef.value ||
+    event.propertyName !== 'transform' ||
+    !isClosing.value ||
+    closeCompleted.value
+  ) {
+    return
+  }
+
+  closeCompleted.value = true
+
+  if (internalClosing.value) {
     emit('close')
   }
+
+  emit('after-close')
 }
 
 function onTouchStart(event: TouchEvent) {
-  if (closing.value) {
+  if (isClosing.value) {
     return
   }
 
@@ -120,7 +139,7 @@ function onTouchStart(event: TouchEvent) {
 }
 
 function onTouchMove(event: TouchEvent) {
-  if (closing.value) {
+  if (isClosing.value) {
     return
   }
 
@@ -141,7 +160,7 @@ function onTouchMove(event: TouchEvent) {
 }
 
 function onTouchEnd() {
-  if (closing.value) {
+  if (isClosing.value) {
     return
   }
 
@@ -163,6 +182,17 @@ function onTouchEnd() {
 
 onMounted(lockBodyScroll)
 onUnmounted(unlockBodyScroll)
+
+watch(
+  () => props.closing,
+  (closing) => {
+    if (closing) {
+      closeCompleted.value = false
+      isDragging.value = false
+      dragY.value = 0
+    }
+  }
+)
 </script>
 
 <style scoped>
@@ -176,11 +206,13 @@ onUnmounted(unlockBodyScroll)
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   touch-action: manipulation;
-  animation: overlay-in 180ms ease-out;
-  transition: opacity 160ms ease-in;
+  animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
+  transition: opacity var(--transition-overlay) var(--ease-exit);
+  will-change: opacity;
 }
 
 .bottom-sheet-overlay.closing {
+  animation: none;
   opacity: 0;
 }
 
@@ -204,9 +236,13 @@ onUnmounted(unlockBodyScroll)
   border-radius: 30px 30px 0 0;
   background: var(--color-surface);
   box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.18);
-  transition: transform 200ms ease-out;
-  animation: sheet-in 200ms ease-out;
-  will-change: transform;
+  transform: translate3d(0, var(--sheet-drag-y, 0), 0);
+  transition:
+    transform var(--transition-sheet) var(--ease-standard),
+    opacity var(--transition-sheet) var(--ease-standard);
+  animation: sheet-in var(--transition-sheet) var(--ease-standard) backwards;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
 }
 
 .bottom-sheet-panel.dragging {
@@ -214,7 +250,12 @@ onUnmounted(unlockBodyScroll)
 }
 
 .bottom-sheet-panel.closing {
-  transition: transform 200ms ease-in;
+  animation: none;
+  opacity: 0;
+  transform: translate3d(0, calc(100% + var(--safe-bottom) + 24px), 0);
+  transition:
+    transform var(--transition-sheet) var(--ease-exit),
+    opacity var(--transition-overlay) var(--ease-exit);
 }
 
 .bottom-sheet-handle {

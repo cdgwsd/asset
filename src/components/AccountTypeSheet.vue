@@ -1,11 +1,18 @@
 <template>
-  <BottomSheet panel-class="account-type-sheet" labelledby="account-type-title" @close="$emit('close')">
+  <BottomSheet
+    panel-class="account-type-sheet"
+    labelledby="account-type-title"
+    :hide-overlay="hideOverlay"
+    :closing="closing"
+    @close="$emit('close')"
+    @after-close="$emit('after-close')"
+  >
       <header class="account-type-header">
         <h2 id="account-type-title">选择类型</h2>
       </header>
 
-      <template v-if="!showCustomForm">
-        <div class="account-type-list">
+      <Transition name="sheet-content" mode="out-in">
+        <div v-if="!showCustomForm" key="preset-types" class="account-type-list">
           <button
             v-for="choice in presetChoices"
             :key="choice.key"
@@ -36,43 +43,43 @@
             </span>
           </button>
         </div>
-      </template>
 
-      <form v-else class="custom-type-form" @submit.prevent="handleCreateCustom">
-        <label class="custom-field">
-          <span>类型名称</span>
-          <input v-model="customName" placeholder="例如：公积金、储值卡" enterkeyhint="next" />
-        </label>
+        <form v-else key="custom-type" class="custom-type-form" @submit.prevent="handleCreateCustom">
+          <label class="custom-field">
+            <span>类型名称</span>
+            <input v-model="customName" placeholder="例如：公积金、储值卡" enterkeyhint="next" />
+          </label>
 
-        <div class="segmented">
-          <button
-            type="button"
-            :class="{ active: customCategory === 'ASSET' }"
-            @click="customCategory = 'ASSET'"
-          >
-            资产
-          </button>
-          <button
-            type="button"
-            :class="{ active: customCategory === 'LIABILITY' }"
-            @click="customCategory = 'LIABILITY'"
-          >
-            负债
-          </button>
-        </div>
+          <div class="segmented">
+            <button
+              type="button"
+              :class="{ active: customCategory === 'ASSET' }"
+              @click="customCategory = 'ASSET'"
+            >
+              资产
+            </button>
+            <button
+              type="button"
+              :class="{ active: customCategory === 'LIABILITY' }"
+              @click="customCategory = 'LIABILITY'"
+            >
+              负债
+            </button>
+          </div>
 
-        <label class="custom-field">
-          <span>账户分组</span>
-          <select v-model="customGroup" class="custom-select">
-            <option v-for="g in DEFAULT_GROUPS" :key="g" :value="g">{{ g }}</option>
-          </select>
-        </label>
+          <label class="custom-field">
+            <span>账户分组</span>
+            <select v-model="customGroup" class="custom-select">
+              <option v-for="g in DEFAULT_GROUPS" :key="g" :value="g">{{ g }}</option>
+            </select>
+          </label>
 
-        <div class="custom-form-actions">
-          <button class="secondary-button" type="button" @click="showCustomForm = false">返回</button>
-          <button class="primary-button" type="submit">创建</button>
-        </div>
-      </form>
+          <div class="custom-form-actions">
+            <button class="secondary-button" type="button" @click="showCustomForm = false">返回</button>
+            <button class="primary-button" type="submit">创建</button>
+          </div>
+        </form>
+      </Transition>
   </BottomSheet>
 </template>
 
@@ -88,8 +95,20 @@ import type { AccountCategory } from '../types/account'
 
 const emit = defineEmits<{
   close: []
+  'after-close': []
   select: [key: AccountTypeChoiceKey]
 }>()
+
+withDefaults(
+  defineProps<{
+    hideOverlay?: boolean
+    closing?: boolean
+  }>(),
+  {
+    hideOverlay: false,
+    closing: false
+  }
+)
 
 const toastStore = useToastStore()
 const presetChoices = accountTypeChoices.filter((c) => c.key !== 'custom')

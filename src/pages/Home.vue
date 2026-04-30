@@ -42,61 +42,72 @@
     </template>
 
       <UpdateBalanceSheet
-        v-if="uiStore.activeSheet === 'UPDATE_BALANCE' && uiStore.selectedAccountId"
-        :account-id="uiStore.selectedAccountId"
+        v-if="renderedSheet === 'UPDATE_BALANCE' && renderedAccountId"
+        :account-id="renderedAccountId"
+        :closing="sheetClosing"
         hide-overlay
-        @close="uiStore.closeSheet()"
+        @after-close="handleSheetAfterClose"
+        @close="requestCloseSheet"
         @saved="handleSheetSaved"
       />
 
       <AccountTypeSheet
-        v-if="uiStore.activeSheet === 'SELECT_ACCOUNT_TYPE'"
+        v-if="renderedSheet === 'SELECT_ACCOUNT_TYPE'"
+        :closing="sheetClosing"
         hide-overlay
-        @close="uiStore.closeSheet()"
+        @after-close="handleSheetAfterClose"
+        @close="requestCloseSheet"
         @select="handleAccountTypeSelected"
       />
 
       <AddAccountSheet
-        v-if="uiStore.activeSheet === 'ADD_ACCOUNT'"
+        v-if="renderedSheet === 'ADD_ACCOUNT'"
         :initial-type="selectedAddAccountType"
+        :closing="sheetClosing"
         hide-overlay
-        @abandon="uiStore.closeSheet()"
+        @after-close="handleSheetAfterClose"
+        @abandon="requestCloseSheet"
         @saved="handleSheetSaved"
       />
 
       <AccountFormSheet
-        v-if="uiStore.activeSheet === 'EDIT_ACCOUNT' && uiStore.selectedAccountId"
-        :account-id="uiStore.selectedAccountId"
+        v-if="renderedSheet === 'EDIT_ACCOUNT' && renderedAccountId"
+        :account-id="renderedAccountId"
+        :closing="sheetClosing"
         hide-overlay
-        @close="uiStore.closeSheet()"
+        @after-close="handleSheetAfterClose"
+        @close="requestCloseSheet"
         @saved="handleSheetSaved"
         @deleted="handleSheetSaved"
       />
 
       <TrendSheet
-        v-if="uiStore.activeSheet === 'TREND'"
+        v-if="renderedSheet === 'TREND'"
         :hide-amount="settingsStore.hideAmount"
         :decimals="settingsStore.amountDecimalPlaces"
+        :closing="sheetClosing"
         hide-overlay
-        @close="uiStore.closeSheet()"
+        @after-close="handleSheetAfterClose"
+        @close="requestCloseSheet"
       />
 
       <SettingsSheet
-        v-if="uiStore.activeSheet === 'SETTINGS'"
+        v-if="renderedSheet === 'SETTINGS'"
+        :closing="sheetClosing"
         hide-overlay
-        @close="uiStore.closeSheet()"
+        @after-close="handleSheetAfterClose"
+        @close="requestCloseSheet"
         @changed="refreshHome"
       />
 
       <Teleport to="body">
-        <Transition name="overlay-fade">
-          <div
-            v-if="uiStore.activeSheet !== 'NONE'"
-            class="bottom-sheet-overlay shared-overlay"
-            role="presentation"
-            @click="uiStore.closeSheet()"
-          />
-        </Transition>
+        <div
+          v-if="renderedSheet !== 'NONE'"
+          class="bottom-sheet-overlay shared-overlay"
+          :class="{ closing: sheetClosing }"
+          role="presentation"
+          @click="requestCloseSheet"
+        />
       </Teleport>
   </main>
 </template>
@@ -117,7 +128,7 @@ import { initDefaultAccountTypes } from '../services/accountService'
 import { useHomeStore } from '../stores/homeStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useToastStore } from '../stores/toastStore'
-import { useUiStore } from '../stores/uiStore'
+import { useUiStore, type ActiveSheet } from '../stores/uiStore'
 import type { AccountTypeChoiceKey } from '../constants/accountTypeChoices'
 
 const homeStore = useHomeStore()
@@ -128,6 +139,9 @@ const summary = computed(() => homeStore.summary)
 const TrendSheet = defineAsyncComponent(() => import('../components/TrendSheet.vue'))
 const selectedAddAccountType = ref<AccountTypeChoiceKey>('cash')
 const expandedAccountId = ref<string | null>(null)
+const renderedSheet = ref<ActiveSheet>('NONE')
+const renderedAccountId = ref<string | undefined>()
+const sheetClosing = ref(false)
 
 async function refreshHome() {
   await homeStore.refresh(settingsStore.showDeletedAccounts)
@@ -137,6 +151,25 @@ async function handleSheetSaved() {
   uiStore.closeSheet()
   closeSwipeActions()
   await refreshHome()
+}
+
+function requestCloseSheet() {
+  if (uiStore.activeSheet === 'NONE') {
+    sheetClosing.value = renderedSheet.value !== 'NONE'
+    return
+  }
+
+  uiStore.closeSheet()
+}
+
+function handleSheetAfterClose() {
+  if (uiStore.activeSheet !== 'NONE' && !sheetClosing.value) {
+    return
+  }
+
+  renderedSheet.value = 'NONE'
+  renderedAccountId.value = undefined
+  sheetClosing.value = false
 }
 
 function openAccountTypeSheet() {
@@ -178,5 +211,22 @@ watch(
   () => {
     void refreshHome()
   }
+)
+
+watch(
+  () => [uiStore.activeSheet, uiStore.selectedAccountId] as const,
+  ([activeSheet, selectedAccountId]) => {
+    if (activeSheet === 'NONE') {
+      if (renderedSheet.value !== 'NONE') {
+        sheetClosing.value = true
+      }
+      return
+    }
+
+    sheetClosing.value = false
+    renderedSheet.value = activeSheet
+    renderedAccountId.value = selectedAccountId
+  },
+  { immediate: true }
 )
 </script>

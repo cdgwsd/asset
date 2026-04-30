@@ -44,9 +44,11 @@ button {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition:
-    transform 120ms ease,
-    background-color 160ms ease,
-    opacity 160ms ease;
+    transform var(--transition-button) var(--ease-press),
+    background-color var(--transition-fast) var(--ease-standard),
+    border-color var(--transition-fast) var(--ease-standard),
+    color var(--transition-fast) var(--ease-standard),
+    opacity var(--transition-fast) var(--ease-standard);
 }
 
 a,
@@ -78,6 +80,84 @@ a:active,
   min-height: calc(var(--stable-vh) * 100);
   margin: 0 auto;
   padding: calc(10px + var(--safe-top)) 20px calc(28px + var(--safe-bottom));
+}
+
+.page-route-enter-active,
+.page-route-leave-active {
+  transition:
+    opacity var(--transition-page) var(--ease-standard),
+    transform var(--transition-page) var(--ease-standard);
+  will-change: opacity, transform;
+}
+
+.page-route-enter-from {
+  opacity: 0;
+  transform: translate3d(0, var(--motion-page-enter-y), 0);
+}
+
+.page-route-leave-to {
+  opacity: 0;
+  transform: translate3d(0, var(--motion-page-leave-y), 0);
+}
+
+.page-route-back-enter-active,
+.page-route-back-leave-active {
+  transition:
+    opacity var(--transition-page) var(--ease-standard),
+    transform var(--transition-page) var(--ease-standard);
+  will-change: opacity, transform;
+}
+
+.page-route-back-enter-from {
+  opacity: 0;
+  transform: translate3d(0, calc(var(--motion-page-leave-y) * -1), 0);
+}
+
+.page-route-back-leave-to {
+  opacity: 0;
+  transform: translate3d(0, var(--motion-page-leave-y), 0);
+}
+
+.sheet-content-enter-active,
+.sheet-content-leave-active {
+  transition:
+    opacity var(--transition-dialog) var(--ease-standard),
+    transform var(--transition-dialog) var(--ease-standard);
+  will-change: opacity, transform;
+}
+
+.dialog-pop-enter-active,
+.dialog-pop-leave-active {
+  transition: opacity var(--transition-dialog) var(--ease-standard);
+}
+
+.sheet-content-enter-from {
+  opacity: 0;
+  transform: translate3d(0, 6px, 0);
+}
+
+.sheet-content-leave-to {
+  opacity: 0;
+  transform: translate3d(0, var(--motion-dialog-enter-y), 0);
+}
+
+.dialog-pop-enter-from,
+.dialog-pop-leave-to {
+  opacity: 0;
+}
+
+.dialog-pop-enter-active .confirm-dialog,
+.dialog-pop-leave-active .confirm-dialog {
+  transition:
+    opacity var(--transition-dialog) var(--ease-standard),
+    transform var(--transition-dialog) var(--ease-standard);
+  will-change: opacity, transform;
+}
+
+.dialog-pop-enter-from .confirm-dialog,
+.dialog-pop-leave-to .confirm-dialog {
+  opacity: 0;
+  transform: translate3d(0, var(--motion-dialog-enter-y), 0) scale(0.98);
 }
 
 
@@ -506,11 +586,11 @@ a:active,
 
 @keyframes sheet-in {
   from {
-    transform: translateY(28px);
+    transform: translate3d(0, var(--motion-sheet-enter-y), 0);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
     opacity: 1;
   }
 }
@@ -526,22 +606,33 @@ a:active,
 
 @keyframes dialog-in {
   from {
-    transform: scale(0.96);
+    transform: translate3d(0, var(--motion-dialog-enter-y), 0) scale(0.98);
     opacity: 0;
   }
   to {
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
     opacity: 1;
   }
 }
 
 @keyframes toast-in {
   from {
-    transform: translateY(10px);
+    transform: translate3d(0, 8px, 0);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes list-item-in {
+  from {
+    transform: translate3d(0, var(--motion-list-enter-y), 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
     opacity: 1;
   }
 }
@@ -553,14 +644,22 @@ a:active,
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   touch-action: manipulation;
+  animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
+  transition: opacity var(--transition-overlay) var(--ease-exit);
+  will-change: opacity;
+}
+
+.shared-overlay.closing {
+  animation: none;
+  opacity: 0;
 }
 
 .overlay-fade-enter-active {
-  transition: opacity 180ms ease-out;
+  transition: opacity var(--transition-overlay) var(--ease-standard);
 }
 
 .overlay-fade-leave-active {
-  transition: opacity 160ms ease-in;
+  transition: opacity var(--transition-overlay) var(--ease-exit);
 }
 
 .overlay-fade-enter-from,

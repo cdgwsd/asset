@@ -1,5 +1,11 @@
 <template>
-  <BottomSheet labelledby="account-form-title" @close="$emit('close')">
+  <BottomSheet
+    labelledby="account-form-title"
+    :hide-overlay="hideOverlay"
+    :closing="closing"
+    @close="$emit('close')"
+    @after-close="$emit('after-close')"
+  >
       <header class="sheet-header">
         <div>
           <p class="sheet-kicker icon-label">
@@ -115,16 +121,18 @@
       </form>
   </BottomSheet>
 
-  <ConfirmDialog
-    v-if="confirmVisible"
-    title="确认删除账户？"
-    message="确定要删除该账户吗？删除后该账户将不再显示。"
-    confirm-text="确认删除"
-    :busy="deleting"
-    danger
-    @cancel="confirmVisible = false"
-    @confirm="handleDelete"
-  />
+  <Transition name="dialog-pop">
+    <ConfirmDialog
+      v-if="confirmVisible"
+      title="确认删除账户？"
+      message="确定要删除该账户吗？删除后该账户将不再显示。"
+      confirm-text="确认删除"
+      :busy="deleting"
+      danger
+      @cancel="confirmVisible = false"
+      @confirm="handleDelete"
+    />
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -140,12 +148,21 @@ import type { AccountCategory, AccountType } from '../types/account'
 import { getAccountTypeIcon } from '../utils/accountIcon'
 import { getSvgIconOptions, type SvgIconOption } from '../utils/svgIcons'
 
-const props = defineProps<{
-  accountId: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    accountId: string
+    hideOverlay?: boolean
+    closing?: boolean
+  }>(),
+  {
+    hideOverlay: false,
+    closing: false
+  }
+)
 
 const emit = defineEmits<{
   close: []
+  'after-close': []
   saved: []
   deleted: []
 }>()

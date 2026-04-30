@@ -35,7 +35,8 @@ const toastStore = useToastStore()
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
   font-size: 14px;
   font-weight: 650;
-  animation: toast-in 180ms ease-out;
+  animation: toast-in var(--transition-fast) var(--ease-standard) backwards;
+  will-change: transform, opacity;
 }
 
 .toast.error {

@@ -270,6 +270,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   overscroll-behavior-x: contain;
   touch-action: pan-y;
+  animation: list-item-in var(--transition-list) var(--ease-standard) backwards;
 }
 
 .swipe-actions {
@@ -305,7 +306,10 @@ onBeforeUnmount(() => {
   text-align: left;
   user-select: none;
   cursor: pointer;
-  transition: transform 180ms ease;
+  transition:
+    transform var(--transition-normal) var(--ease-standard),
+    background-color var(--transition-fast) var(--ease-standard),
+    opacity var(--transition-fast) var(--ease-standard);
   -webkit-user-select: none;
   touch-action: pan-y;
   will-change: transform;

@@ -1,5 +1,12 @@
 <template>
-  <BottomSheet panel-class="compact" labelledby="update-balance-title" @close="$emit('close')">
+  <BottomSheet
+    panel-class="compact"
+    labelledby="update-balance-title"
+    :hide-overlay="hideOverlay"
+    :closing="closing"
+    @close="$emit('close')"
+    @after-close="$emit('after-close')"
+  >
       <header class="sheet-header">
         <div>
           <p class="sheet-kicker icon-label">
@@ -60,12 +67,21 @@ import { useToastStore } from '../stores/toastStore'
 import type { Account } from '../types/account'
 import { formatAccountBalance, formatMoneyInput, parseMoneyInput, unformatMoneyInput } from '../utils/money'
 
-const props = defineProps<{
-  accountId: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    accountId: string
+    hideOverlay?: boolean
+    closing?: boolean
+  }>(),
+  {
+    hideOverlay: false,
+    closing: false
+  }
+)
 
 const emit = defineEmits<{
   close: []
+  'after-close': []
   saved: []
 }>()
 

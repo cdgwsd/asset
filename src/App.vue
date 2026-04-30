@@ -1,5 +1,7 @@
 <template>
-  <Home />
+  <Transition name="page-route" appear mode="out-in">
+    <Home key="home" />
+  </Transition>
   <ToastHost />
 </template>
 
