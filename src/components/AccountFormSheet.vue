@@ -339,7 +339,7 @@ watch(() => props.accountId, load, { immediate: true })
 
 .delete-account-button:active {
   background: transparent;
-  opacity: 0.62;
+  opacity: 0.7;
 }
 
 .icon-picker-grid {
@@ -389,6 +389,7 @@ watch(() => props.accountId, load, { immediate: true })
 
 .form-choice-row:active {
   background: var(--color-surface-strong);
+  opacity: 0.9;
 }
 
 .form-choice-icon {

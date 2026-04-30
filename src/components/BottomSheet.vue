@@ -13,7 +13,7 @@
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
         @touchend="onTouchEnd"
-        @touchcancel="onTouchEnd"
+        @touchcancel="onTouchCancel"
         @transitionend="onTransitionEnd"
       >
         <div class="bottom-sheet-handle" aria-hidden="true"></div>
@@ -41,7 +41,7 @@
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
         @touchend="onTouchEnd"
-        @touchcancel="onTouchEnd"
+        @touchcancel="onTouchCancel"
         @transitionend="onTransitionEnd"
       >
         <div class="bottom-sheet-handle" aria-hidden="true"></div>
@@ -88,6 +88,9 @@ const canDrag = ref(false)
 const internalClosing = ref(false)
 const closeCompleted = ref(false)
 const isClosing = computed(() => props.closing || internalClosing.value)
+let lastTouchY = 0
+let lastTouchAt = 0
+let releaseVelocityY = 0
 
 function panelHeight(): number {
   return panelRef.value?.offsetHeight ?? window.innerHeight * 0.8
@@ -101,7 +104,6 @@ function emitClose() {
   closeCompleted.value = false
   internalClosing.value = true
   isDragging.value = false
-  dragY.value = 0
 }
 
 function onTransitionEnd(event: TransitionEvent) {
@@ -134,6 +136,9 @@ function onTouchStart(event: TouchEvent) {
   }
 
   startY.value = touch.clientY
+  lastTouchY = touch.clientY
+  lastTouchAt = performance.now()
+  releaseVelocityY = 0
   canDrag.value = (contentRef.value?.scrollTop ?? 0) <= 0
   isDragging.value = false
 }
@@ -154,6 +159,11 @@ function onTouchMove(event: TouchEvent) {
     return
   }
 
+  const now = performance.now()
+  const elapsed = Math.max(1, now - lastTouchAt)
+  releaseVelocityY = (touch.clientY - lastTouchY) / elapsed
+  lastTouchY = touch.clientY
+  lastTouchAt = now
   dragY.value = nextDragY
   isDragging.value = true
   event.preventDefault()
@@ -169,13 +179,21 @@ function onTouchEnd() {
     return
   }
 
-  const shouldClose = dragY.value > 100 || dragY.value > panelHeight() * 0.2
+  const shouldClose =
+    dragY.value > 72 ||
+    dragY.value > panelHeight() * 0.16 ||
+    (releaseVelocityY > 0.45 && dragY.value > 28)
 
   if (shouldClose) {
     emitClose()
     return
   }
 
+  dragY.value = 0
+  isDragging.value = false
+}
+
+function onTouchCancel() {
   dragY.value = 0
   isDragging.value = false
 }
@@ -203,8 +221,8 @@ watch(
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
   touch-action: manipulation;
   animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
   transition: opacity var(--transition-overlay) var(--ease-exit);
@@ -235,7 +253,7 @@ watch(
   overflow: hidden;
   border-radius: 30px 30px 0 0;
   background: var(--color-surface);
-  box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 -12px 38px rgba(0, 0, 0, 0.14);
   transform: translate3d(0, var(--sheet-drag-y, 0), 0);
   transition:
     transform var(--transition-sheet) var(--ease-standard),
@@ -272,6 +290,7 @@ watch(
   min-height: 0;
   overflow-y: auto;
   padding: 0 20px calc(22px + var(--safe-bottom));
+  scroll-padding: 18px 0 calc(80px + var(--safe-bottom));
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;

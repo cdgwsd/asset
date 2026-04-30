@@ -36,12 +36,12 @@ defineEmits<{
   align-items: center;
   margin: -10px -20px 8px;
   padding: calc(10px + var(--safe-top)) 20px 10px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
-  backdrop-filter: blur(18px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.82));
+  backdrop-filter: blur(8px);
 }
 
 :root[data-theme='dark'] .app-header {
-  background: linear-gradient(180deg, rgba(14, 14, 15, 0.94), rgba(14, 14, 15, 0.72));
+  background: linear-gradient(180deg, rgba(14, 14, 15, 0.96), rgba(14, 14, 15, 0.84));
 }
 
 .app-header h1 {

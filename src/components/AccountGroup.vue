@@ -4,7 +4,7 @@
       <span>{{ group.groupName }}</span>
       <strong>{{ groupTotalText }}</strong>
     </div>
-    <div class="account-list">
+    <TransitionGroup name="account-list" tag="div" class="account-list">
       <AccountRow
         v-for="account in group.accounts"
         :key="account.accountId"
@@ -17,7 +17,7 @@
         @open-actions="$emit('open-actions', $event)"
         @close-actions="$emit('close-actions')"
       />
-    </div>
+    </TransitionGroup>
   </section>
 </template>
 
@@ -73,10 +73,27 @@ const groupTotalText = computed(() =>
 }
 
 .account-list {
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+}
+
+.account-list-enter-active,
+.account-list-leave-active {
+  transition:
+    opacity var(--transition-list) var(--ease-standard),
+    background-color var(--transition-list) var(--ease-standard);
+}
+
+.account-list-enter-from,
+.account-list-leave-to {
+  opacity: 0;
+}
+
+.account-list-move {
+  transition: transform var(--transition-list) var(--ease-standard);
 }
 
 .account-list :deep(.account-swipe:last-child .account-row) {

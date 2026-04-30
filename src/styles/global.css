@@ -66,7 +66,7 @@ button:not(:disabled):active,
 a:active,
 [role='button']:active,
 .clickable:active {
-  transform: scale(0.98);
+  opacity: 0.82;
 }
 
 .app-icon {
@@ -91,30 +91,12 @@ a:active,
 }
 
 .page-route-enter-from {
-  opacity: 0;
+  opacity: 0.92;
   transform: translate3d(0, var(--motion-page-enter-y), 0);
 }
 
 .page-route-leave-to {
-  opacity: 0;
-  transform: translate3d(0, var(--motion-page-leave-y), 0);
-}
-
-.page-route-back-enter-active,
-.page-route-back-leave-active {
-  transition:
-    opacity var(--transition-page) var(--ease-standard),
-    transform var(--transition-page) var(--ease-standard);
-  will-change: opacity, transform;
-}
-
-.page-route-back-enter-from {
-  opacity: 0;
-  transform: translate3d(0, calc(var(--motion-page-leave-y) * -1), 0);
-}
-
-.page-route-back-leave-to {
-  opacity: 0;
+  opacity: 0.96;
   transform: translate3d(0, var(--motion-page-leave-y), 0);
 }
 
@@ -156,8 +138,8 @@ a:active,
 
 .dialog-pop-enter-from .confirm-dialog,
 .dialog-pop-leave-to .confirm-dialog {
-  opacity: 0;
-  transform: translate3d(0, var(--motion-dialog-enter-y), 0) scale(0.98);
+  opacity: 0.92;
+  transform: translate3d(0, var(--motion-dialog-enter-y), 0) scale(0.995);
 }
 
 
@@ -173,6 +155,12 @@ a:active,
   border-radius: 999px;
   background: transparent;
   cursor: pointer;
+}
+
+.icon-button:active,
+.close-button:active,
+.eye-button:active {
+  background: var(--color-surface-strong);
 }
 
 .eyebrow,
@@ -269,6 +257,7 @@ a:active,
 .settings-row:active,
 .action-row:active {
   background: var(--color-surface-strong);
+  opacity: 0.9;
 }
 
 .action-row.primary:active {
@@ -282,7 +271,7 @@ a:active,
 
 .primary-button:not(:disabled):active,
 .secondary-button:not(:disabled):active {
-  transform: scale(0.98);
+  opacity: 0.88;
 }
 
 .sheet-header {
@@ -429,6 +418,10 @@ a:active,
   color: var(--color-text);
   padding: 0 14px;
   outline: none;
+  scroll-margin: 96px;
+  transition:
+    background-color var(--transition-fast) var(--ease-standard),
+    border-color var(--transition-fast) var(--ease-standard);
 }
 
 .selected-type-preview {
@@ -477,7 +470,7 @@ a:active,
 .segmented button.active {
   background: var(--color-surface);
   color: var(--color-text);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .sheet-actions {
@@ -606,8 +599,8 @@ a:active,
 
 @keyframes dialog-in {
   from {
-    transform: translate3d(0, var(--motion-dialog-enter-y), 0) scale(0.98);
-    opacity: 0;
+    transform: translate3d(0, var(--motion-dialog-enter-y), 0) scale(0.995);
+    opacity: 0.92;
   }
   to {
     transform: translate3d(0, 0, 0) scale(1);
@@ -617,18 +610,7 @@ a:active,
 
 @keyframes toast-in {
   from {
-    transform: translate3d(0, 8px, 0);
-    opacity: 0;
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-}
-
-@keyframes list-item-in {
-  from {
-    transform: translate3d(0, var(--motion-list-enter-y), 0);
+    transform: translate3d(0, 4px, 0);
     opacity: 0;
   }
   to {
@@ -641,8 +623,8 @@ a:active,
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
   touch-action: manipulation;
   animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
   transition: opacity var(--transition-overlay) var(--ease-exit);
@@ -651,19 +633,6 @@ a:active,
 
 .shared-overlay.closing {
   animation: none;
-  opacity: 0;
-}
-
-.overlay-fade-enter-active {
-  transition: opacity var(--transition-overlay) var(--ease-standard);
-}
-
-.overlay-fade-leave-active {
-  transition: opacity var(--transition-overlay) var(--ease-exit);
-}
-
-.overlay-fade-enter-from,
-.overlay-fade-leave-to {
   opacity: 0;
 }
 

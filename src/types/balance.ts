@@ -22,4 +22,8 @@ export interface UpdateBalanceInput {
 
 export interface UpdateBalanceResult {
   changed: boolean
+  accountId: string
+  oldBalance: number
+  newBalance: number
+  updatedAt: string
 }

@@ -7,7 +7,7 @@ function applyLock(): void {
 
   document.documentElement.style.overflow = 'hidden'
   document.body.style.overflow = 'hidden'
-  document.body.style.position = 'relative'
+  document.body.style.position = 'fixed'
   document.body.style.top = `-${scrollY}px`
   document.body.style.left = '0'
   document.body.style.right = '0'

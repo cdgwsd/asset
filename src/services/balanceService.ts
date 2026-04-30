@@ -15,7 +15,13 @@ export async function updateAccountBalance(input: UpdateBalanceInput): Promise<U
   const newBalance = normalizeMoney(input.newBalance)
 
   if (oldBalance === newBalance) {
-    return { changed: false }
+    return {
+      changed: false,
+      accountId: account.id,
+      oldBalance,
+      newBalance,
+      updatedAt: account.updatedAt
+    }
   }
 
   const timestamp = now()
@@ -56,5 +62,11 @@ export async function updateAccountBalance(input: UpdateBalanceInput): Promise<U
     await db.assetSnapshots.put(snapshot)
   })
 
-  return { changed: true }
+  return {
+    changed: true,
+    accountId: account.id,
+    oldBalance,
+    newBalance,
+    updatedAt: timestamp
+  }
 }

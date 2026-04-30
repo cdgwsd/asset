@@ -65,6 +65,7 @@ import { getAccountById } from '../services/accountService'
 import { updateAccountBalance } from '../services/balanceService'
 import { useToastStore } from '../stores/toastStore'
 import type { Account } from '../types/account'
+import type { UpdateBalanceResult } from '../types/balance'
 import { formatAccountBalance, formatMoneyInput, parseMoneyInput, unformatMoneyInput } from '../utils/money'
 
 const props = withDefaults(
@@ -82,7 +83,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   close: []
   'after-close': []
-  saved: []
+  saved: [result: UpdateBalanceResult]
 }>()
 
 const toastStore = useToastStore()
@@ -120,7 +121,7 @@ async function handleSubmit() {
     })
 
     toastStore.show(result.changed ? '余额已更新' : '余额未变化', result.changed ? 'success' : 'info')
-    emit('saved')
+    emit('saved', result)
   } catch (error) {
     toastStore.show(error instanceof Error ? error.message : '保存失败', 'error')
   } finally {

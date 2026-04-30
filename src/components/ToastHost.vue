@@ -32,7 +32,7 @@ const toastStore = useToastStore()
   background: rgba(20, 20, 20, 0.88);
   color: #ffffff;
   padding: 10px 15px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
   font-size: 14px;
   font-weight: 650;
   animation: toast-in var(--transition-fast) var(--ease-standard) backwards;

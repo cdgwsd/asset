@@ -185,6 +185,7 @@ async function handleCreateCustom() {
 
 .account-type-option:active {
   background: var(--color-surface-strong);
+  opacity: 0.9;
 }
 
 .type-option-icon {
@@ -246,6 +247,10 @@ async function handleCreateCustom() {
   padding: 0 14px;
   outline: none;
   font-size: 16px;
+  scroll-margin: 96px;
+  transition:
+    background-color var(--transition-fast) var(--ease-standard),
+    border-color var(--transition-fast) var(--ease-standard);
 }
 
 .custom-field input:focus,

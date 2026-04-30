@@ -344,6 +344,7 @@ void getAccountTypes().then((types) => {
 
 .form-choice-row:not(.static):active {
   background: var(--color-surface-strong);
+  opacity: 0.9;
 }
 
 .form-choice-row.static {
@@ -414,6 +415,8 @@ void getAccountTypes().then((types) => {
   background: transparent;
   color: var(--color-text);
   outline: none;
+  scroll-margin: 96px;
+  transition: background-color var(--transition-fast) var(--ease-standard);
 }
 
 .add-field input::placeholder {
@@ -440,7 +443,7 @@ void getAccountTypes().then((types) => {
 }
 
 .add-submit-button:not(:disabled):active {
-  transform: scale(0.98);
+  opacity: 0.88;
 }
 
 .abandon-button {

@@ -48,7 +48,7 @@
         hide-overlay
         @after-close="handleSheetAfterClose"
         @close="requestCloseSheet"
-        @saved="handleSheetSaved"
+        @saved="handleBalanceSaved"
       />
 
       <AccountTypeSheet
@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AccountFormSheet from '../components/AccountFormSheet.vue'
 import AccountGroup from '../components/AccountGroup.vue'
 import AccountTypeSheet from '../components/AccountTypeSheet.vue'
@@ -130,6 +130,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 import { useToastStore } from '../stores/toastStore'
 import { useUiStore, type ActiveSheet } from '../stores/uiStore'
 import type { AccountTypeChoiceKey } from '../constants/accountTypeChoices'
+import type { UpdateBalanceResult } from '../types/balance'
 
 const homeStore = useHomeStore()
 const settingsStore = useSettingsStore()
@@ -142,15 +143,29 @@ const expandedAccountId = ref<string | null>(null)
 const renderedSheet = ref<ActiveSheet>('NONE')
 const renderedAccountId = ref<string | undefined>()
 const sheetClosing = ref(false)
+let sheetHistoryOpen = false
+let ignoreNextPopState = false
 
 async function refreshHome() {
   await homeStore.refresh(settingsStore.showDeletedAccounts)
 }
 
 async function handleSheetSaved() {
+  closeCurrentSheet()
+  await refreshHome()
+}
+
+function handleBalanceSaved(result: UpdateBalanceResult) {
+  closeCurrentSheet()
+  if (result.changed) {
+    homeStore.applyAccountBalance(result.accountId, result.newBalance, result.updatedAt)
+  }
+}
+
+function closeCurrentSheet() {
   uiStore.closeSheet()
   closeSwipeActions()
-  await refreshHome()
+  syncHistoryAfterSheetClose()
 }
 
 function requestCloseSheet() {
@@ -159,7 +174,7 @@ function requestCloseSheet() {
     return
   }
 
-  uiStore.closeSheet()
+  closeCurrentSheet()
 }
 
 function handleSheetAfterClose() {
@@ -196,7 +211,57 @@ function openEditAccount(accountId: string) {
   uiStore.openSheet('EDIT_ACCOUNT', accountId)
 }
 
+function currentHistoryState() {
+  return window.history.state && typeof window.history.state === 'object' ? window.history.state : {}
+}
+
+function syncHistoryForSheet(activeSheet: ActiveSheet) {
+  if (activeSheet === 'NONE') {
+    return
+  }
+
+  const state = {
+    ...currentHistoryState(),
+    assetWalletSheet: activeSheet
+  }
+
+  if (sheetHistoryOpen) {
+    window.history.replaceState(state, '')
+    return
+  }
+
+  window.history.pushState(state, '')
+  sheetHistoryOpen = true
+}
+
+function syncHistoryAfterSheetClose() {
+  if (!sheetHistoryOpen) {
+    return
+  }
+
+  ignoreNextPopState = true
+  sheetHistoryOpen = false
+  window.history.back()
+}
+
+function handlePopState() {
+  if (ignoreNextPopState) {
+    ignoreNextPopState = false
+    return
+  }
+
+  if (uiStore.activeSheet !== 'NONE') {
+    sheetHistoryOpen = false
+    uiStore.closeSheet()
+    closeSwipeActions()
+    return
+  }
+
+  sheetHistoryOpen = false
+}
+
 onMounted(async () => {
+  window.addEventListener('popstate', handlePopState)
   try {
     await initDefaultAccountTypes()
     await settingsStore.loadSettings()
@@ -204,6 +269,10 @@ onMounted(async () => {
   } catch (error) {
     toastStore.show(error instanceof Error ? error.message : '数据库初始化失败', 'error')
   }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('popstate', handlePopState)
 })
 
 watch(
@@ -226,6 +295,7 @@ watch(
     sheetClosing.value = false
     renderedSheet.value = activeSheet
     renderedAccountId.value = selectedAccountId
+    syncHistoryForSheet(activeSheet)
   },
   { immediate: true }
 )

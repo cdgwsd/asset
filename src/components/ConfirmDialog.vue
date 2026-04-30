@@ -55,8 +55,8 @@ defineEmits<{
   display: grid;
   place-items: center;
   padding: 22px;
-  background: rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
   animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
 }
 
@@ -65,7 +65,7 @@ defineEmits<{
   border-radius: 26px;
   background: var(--color-surface);
   padding: 22px;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.16);
   animation: dialog-in var(--transition-dialog) var(--ease-standard) backwards;
   will-change: transform, opacity;
 }

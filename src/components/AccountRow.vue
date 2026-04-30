@@ -5,7 +5,7 @@
     </div>
     <button
       class="account-row"
-      :class="{ deleted: account.isDeleted, dragging }"
+      :class="{ deleted: account.isDeleted, dragging, changed: balanceChanged }"
       type="button"
       :style="rowStyle"
       @click.stop="handleClick"
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
 import type { AccountRowView } from '../types/summary'
 import { getAccountIcon, resolveAccountIconName } from '../utils/accountIcon'
@@ -57,6 +57,7 @@ const emit = defineEmits<{
 const dragging = ref(false)
 const dragOffset = ref(0)
 const suppressClick = ref(false)
+const balanceChanged = ref(false)
 let touchId: number | null = null
 let mouseActive = false
 let startX = 0
@@ -65,6 +66,7 @@ let startOffset = 0
 let horizontalIntent = false
 let verticalIntent = false
 let suppressTimer: number | undefined
+let changedTimer: number | undefined
 
 const balanceText = computed(() =>
   formatAccountBalance(props.account.balance, props.account.category, {
@@ -261,7 +263,28 @@ onBeforeUnmount(() => {
   if (suppressTimer) {
     window.clearTimeout(suppressTimer)
   }
+  if (changedTimer) {
+    window.clearTimeout(changedTimer)
+  }
 })
+
+watch(
+  () => props.account.balance,
+  (balance, previousBalance) => {
+    if (previousBalance === undefined || balance === previousBalance) {
+      return
+    }
+
+    balanceChanged.value = true
+    if (changedTimer) {
+      window.clearTimeout(changedTimer)
+    }
+    changedTimer = window.setTimeout(() => {
+      balanceChanged.value = false
+      changedTimer = undefined
+    }, 650)
+  }
+)
 </script>
 
 <style scoped>
@@ -270,7 +293,6 @@ onBeforeUnmount(() => {
   overflow: hidden;
   overscroll-behavior-x: contain;
   touch-action: pan-y;
-  animation: list-item-in var(--transition-list) var(--ease-standard) backwards;
 }
 
 .swipe-actions {
@@ -307,20 +329,21 @@ onBeforeUnmount(() => {
   user-select: none;
   cursor: pointer;
   transition:
-    transform var(--transition-normal) var(--ease-standard),
+    transform 140ms var(--ease-standard),
     background-color var(--transition-fast) var(--ease-standard),
     opacity var(--transition-fast) var(--ease-standard);
   -webkit-user-select: none;
   touch-action: pan-y;
-  will-change: transform;
 }
 
 .account-row.dragging {
   transition: none;
+  will-change: transform;
 }
 
 .account-row:active {
   background: var(--color-surface-strong);
+  opacity: 0.94;
 }
 
 .account-row.deleted {
@@ -341,11 +364,21 @@ onBeforeUnmount(() => {
 }
 
 .account-balance {
-  padding-right: 0;
+  border-radius: 999px;
+  margin-right: -4px;
+  padding: 3px 6px;
   font-size: 15px;
   font-weight: 650;
   letter-spacing: -0.01em;
   text-align: right;
   white-space: nowrap;
+  transition:
+    background-color var(--transition-list) var(--ease-standard),
+    color var(--transition-list) var(--ease-standard);
+}
+
+.account-row.changed .account-balance {
+  background: rgba(47, 154, 98, 0.12);
+  color: var(--color-success);
 }
 </style>
