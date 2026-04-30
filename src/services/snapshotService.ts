@@ -23,6 +23,21 @@ function toSnapshotAccount(account: Account): AccountSnapshotItem {
   }
 }
 
+function toMoneyValue(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return normalizeMoney(value)
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value.trim().replace(/[,，\s¥￥]/g, ''))
+    if (Number.isFinite(parsed)) {
+      return normalizeMoney(parsed)
+    }
+  }
+
+  return 0
+}
+
 export function buildAssetSnapshot(
   accounts: Account[],
   snapshotDate = today(),
@@ -61,17 +76,17 @@ export function normalizeAssetSnapshot(snapshot: Partial<AssetSnapshot>): AssetS
     accountId: account.accountId,
     accountName: account.accountName || '未命名账户',
     accountType: account.accountType || 'other',
-    balance: normalizeMoney(account.balance || 0),
+    balance: toMoneyValue(account.balance),
     currency: account.currency || 'CNY',
     isLiability: account.isLiability === true
   }))
   const totalAssets =
-    typeof snapshot.totalAssets === 'number'
-      ? normalizeMoney(snapshot.totalAssets)
+    snapshot.totalAssets !== undefined
+      ? toMoneyValue(snapshot.totalAssets)
       : normalizeMoney(accounts.filter((account) => !account.isLiability).reduce((sum, account) => sum + account.balance, 0))
   const totalLiabilities =
-    typeof snapshot.totalLiabilities === 'number'
-      ? normalizeMoney(snapshot.totalLiabilities)
+    snapshot.totalLiabilities !== undefined
+      ? toMoneyValue(snapshot.totalLiabilities)
       : normalizeMoney(accounts.filter((account) => account.isLiability).reduce((sum, account) => sum + account.balance, 0))
 
   return {
@@ -81,8 +96,8 @@ export function normalizeAssetSnapshot(snapshot: Partial<AssetSnapshot>): AssetS
     totalAssets,
     totalLiabilities,
     netAssets:
-      typeof snapshot.netAssets === 'number'
-        ? normalizeMoney(snapshot.netAssets)
+      snapshot.netAssets !== undefined
+        ? toMoneyValue(snapshot.netAssets)
         : normalizeMoney(totalAssets - totalLiabilities),
     accounts
   }

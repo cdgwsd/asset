@@ -10,5 +10,9 @@ export function downloadTextFile(filename: string, content: string, type: string
 
 export async function readJsonFile<T>(file: File): Promise<T> {
   const text = await file.text()
-  return JSON.parse(text) as T
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    throw new Error('文件内容异常或已损坏')
+  }
 }

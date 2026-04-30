@@ -152,10 +152,17 @@ import {
 import AppIcon from './AppIcon.vue'
 import BottomSheet from './BottomSheet.vue'
 import ConfirmDialog from './ConfirmDialog.vue'
-import { clearAllData, exportBalanceHistoryCSV, exportData, exportSnapshotCSV, importData } from '../services/backupService'
+import {
+  clearAllData,
+  exportBalanceHistoryCSV,
+  exportData,
+  exportSnapshotCSV,
+  importData,
+  inspectImportData
+} from '../services/backupService'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useToastStore } from '../stores/toastStore'
-import type { ExportData } from '../types/backup'
+import type { ImportPreview } from '../types/backup'
 import { today, now } from '../utils/date'
 import { downloadTextFile, readJsonFile } from '../utils/file'
 
@@ -179,7 +186,8 @@ withDefaults(
 const settingsStore = useSettingsStore()
 const toastStore = useToastStore()
 const fileInput = ref<HTMLInputElement | null>(null)
-const pendingImportData = ref<ExportData | null>(null)
+const pendingImportData = ref<unknown | null>(null)
+const pendingImportPreview = ref<ImportPreview | null>(null)
 const confirmAction = ref<'import' | 'clear' | null>(null)
 const exportingJson = ref(false)
 const exportingCsv = ref(false)
@@ -199,7 +207,14 @@ const backupOverdue = computed(() => {
 
 const confirmMessage = computed(() => {
   if (confirmAction.value === 'import') {
-    return '导入会覆盖当前所有本地数据。建议先导出备份，确认后再继续。'
+    const preview = pendingImportPreview.value
+    const summary = preview
+      ? `将恢复 ${preview.summary.accounts} 个账户、${preview.summary.balanceHistory} 条余额历史、${preview.summary.assetSnapshots} 条资产快照。`
+      : ''
+    const legacy = preview?.adaptedLegacy ? '系统会自动适配旧版本数据。' : ''
+    const warning = preview?.warnings[0] ? `${preview.warnings[0]}。` : ''
+
+    return `导入会覆盖当前所有本地数据。${summary}${legacy}${warning}建议先导出备份，确认后再继续。`
   }
 
   return '该操作会清空账户、余额历史和设置，且不可恢复。建议先导出备份。'
@@ -235,8 +250,10 @@ async function handleImportJson(event: Event) {
   }
 
   try {
-    const data = await readJsonFile<ExportData>(file)
+    const data = await readJsonFile<unknown>(file)
+    const preview = inspectImportData(data)
     pendingImportData.value = data
+    pendingImportPreview.value = preview
     confirmAction.value = 'import'
   } catch (error) {
     toastStore.show(error instanceof Error ? error.message : '导入失败，请检查文件格式', 'error')
@@ -282,6 +299,7 @@ async function handleExportSnapshotCsv() {
 function cancelConfirm() {
   confirmAction.value = null
   pendingImportData.value = null
+  pendingImportPreview.value = null
   toastStore.show('操作已取消', 'info')
 }
 
@@ -301,11 +319,15 @@ async function confirmImport() {
 
   importing.value = true
   try {
-    await importData(pendingImportData.value)
+    const result = await importData(pendingImportData.value)
     await settingsStore.loadSettings()
-    toastStore.show('导入成功')
+    const legacyMessage = result.adaptedLegacy ? '已自动适配旧版本数据' : ''
+    const warningMessage = result.warnings[0] ?? ''
+    const detail = [legacyMessage, warningMessage].filter(Boolean).join('，')
+    toastStore.show(detail ? `导入成功，${detail}` : '导入成功')
     confirmAction.value = null
     pendingImportData.value = null
+    pendingImportPreview.value = null
     emit('changed')
   } catch (error) {
     toastStore.show(error instanceof Error ? error.message : '导入失败，请检查文件格式', 'error')
