@@ -176,7 +176,6 @@ a:active,
   color: var(--color-muted);
 }
 
-.chart-card,
 .about-card,
 .loading-card {
   border: 1px solid var(--color-border);
@@ -185,7 +184,6 @@ a:active,
   box-shadow: var(--shadow-card);
 }
 
-:root[data-theme='dark'] .chart-card,
 :root[data-theme='dark'] .about-card,
 :root[data-theme='dark'] .loading-card {
   background: rgba(26, 26, 28, 0.86);
@@ -211,7 +209,6 @@ a:active,
 .empty-state h2,
 .confirm-dialog h2,
 .sheet-header h2,
-.chart-title h3,
 .settings-group h3,
 .about-card h3 {
   margin: 0;
@@ -408,8 +405,7 @@ a:active,
 .field input,
 .field select,
 .field textarea,
-.settings-row select,
-.chart-title select {
+.settings-row select {
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--color-border);
@@ -480,63 +476,87 @@ a:active,
   margin-top: 6px;
 }
 
-.range-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.range-tabs button {
-  min-height: 44px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--color-surface-strong);
-  color: var(--color-muted);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.range-tabs button.active {
-  background: var(--color-primary);
-  color: var(--color-bg);
-}
-
-.chart-card {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 14px;
-  padding: 16px;
-}
-
-.chart-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.chart-title h3,
 .settings-group h3,
 .about-card h3 {
   font-size: 16px;
 }
 
-.chart-title span {
-  color: var(--color-muted);
-  font-size: 12px;
+.trend-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.chart-title select {
-  width: auto;
-  max-width: 46%;
-  min-height: 44px;
-  font-size: 16px;
+.trend-stat {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.trend-stat span {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.trend-stat strong {
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  font-size: 28px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.trend-change {
+  justify-items: end;
+  text-align: right;
+}
+
+.trend-change strong {
+  font-size: 18px;
+}
+
+.trend-change.positive strong {
+  color: var(--color-success);
+}
+
+.trend-change.negative strong {
+  color: var(--color-danger);
+}
+
+.trend-change.flat strong {
+  color: var(--color-muted);
+}
+
+.trend-chart-section {
+  display: grid;
+  gap: 10px;
 }
 
 .chart {
   width: 100%;
-  height: 260px;
+  height: 248px;
+}
+
+@media (max-width: 380px) {
+  .trend-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .trend-change {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .chart {
+    height: 228px;
+  }
 }
 
 .settings-group {
