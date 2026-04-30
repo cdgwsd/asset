@@ -6,8 +6,3 @@ export interface NetAssetTrendPoint {
   totalLiability: number
   netAsset: number
 }
-
-export interface AccountTrendPoint {
-  dateTime: string
-  balance: number
-}

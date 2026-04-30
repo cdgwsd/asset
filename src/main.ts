@@ -5,7 +5,17 @@ import App from './App.vue'
 import './styles/variables.css'
 import './styles/global.css'
 
-registerSW({ immediate: true })
+if (import.meta.env.DEV) {
+  navigator.serviceWorker?.getRegistrations().then((registrations) => {
+    registrations
+      .filter((registration) => registration.scope.includes('/asset/'))
+      .forEach((registration) => {
+        void registration.unregister()
+      })
+  })
+} else {
+  registerSW({ immediate: true })
+}
 
 function isFormFieldActive() {
   const activeElement = document.activeElement

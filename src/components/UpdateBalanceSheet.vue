@@ -4,9 +4,9 @@
         <div>
           <p class="sheet-kicker icon-label">
             <AppIcon :icon="RefreshCw" :size="16" />
-            更新余额
+            快速调整
           </p>
-          <h2 id="update-balance-title">更新余额</h2>
+          <h2 id="update-balance-title">快速调整余额</h2>
         </div>
       </header>
 
@@ -34,11 +34,6 @@
             @blur="balanceInput = formatMoneyInput(balanceInput)"
             @input="balanceInput = sanitizeMoneyInput(balanceInput)"
           />
-        </label>
-
-        <label class="field">
-          <span>备注，可选</span>
-          <input v-model="note" placeholder="例如：月底更新" enterkeyhint="done" />
         </label>
 
         <p v-if="account?.category === 'LIABILITY'" class="helper-text">负债账户也输入正数，例如信用卡欠款 3000。</p>
@@ -77,13 +72,11 @@ const emit = defineEmits<{
 const toastStore = useToastStore()
 const account = ref<Account | null>(null)
 const balanceInput = ref('')
-const note = ref('')
 const submitting = ref(false)
 
 async function loadAccount() {
   account.value = (await getAccountById(props.accountId)) ?? null
   balanceInput.value = account.value ? String(account.value.currentBalance) : ''
-  note.value = ''
 }
 
 async function handleSubmit() {
@@ -107,7 +100,6 @@ async function handleSubmit() {
     const result = await updateAccountBalance({
       accountId: props.accountId,
       newBalance: balance,
-      note: note.value,
       source: 'MANUAL_UPDATE'
     })
 

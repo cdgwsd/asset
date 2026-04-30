@@ -8,6 +8,9 @@
           </p>
           <h2 id="account-form-title">调整账户信息</h2>
         </div>
+        <button class="close-button" type="button" aria-label="返回" @click="$emit('close')">
+          <AppIcon :icon="ArrowLeft" />
+        </button>
       </header>
 
       <form class="form-stack" @submit.prevent="handleSubmit">
@@ -97,24 +100,41 @@
           <textarea v-model="form.note" rows="3" placeholder="可选" enterkeyhint="done"></textarea>
         </label>
 
-        <div class="sheet-actions">
-          <button class="secondary-button" type="button" :disabled="submitting" @click="$emit('close')">取消</button>
+        <div class="edit-save-actions">
           <button class="primary-button icon-button-text" type="submit" :disabled="submitting">
             <AppIcon :icon="Check" />
             <span>{{ submitting ? '保存中...' : '保存' }}</span>
           </button>
         </div>
+
+        <div class="edit-danger-zone">
+          <button class="delete-account-button" type="button" :disabled="submitting || deleting" @click="confirmVisible = true">
+            删除
+          </button>
+        </div>
       </form>
   </BottomSheet>
+
+  <ConfirmDialog
+    v-if="confirmVisible"
+    title="确认删除账户？"
+    message="确定要删除该账户吗？删除后该账户将不再显示。"
+    confirm-text="确认删除"
+    :busy="deleting"
+    danger
+    @cancel="confirmVisible = false"
+    @confirm="handleDelete"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import { Check, ChevronRight, Image, PencilLine } from 'lucide-vue-next'
+import { ArrowLeft, Check, ChevronRight, Image, PencilLine } from 'lucide-vue-next'
 import AppIcon from './AppIcon.vue'
 import BottomSheet from './BottomSheet.vue'
+import ConfirmDialog from './ConfirmDialog.vue'
 import { DEFAULT_GROUPS } from '../db/defaults'
-import { getAccountById, getAccountTypes, updateAccount } from '../services/accountService'
+import { deleteAccount, getAccountById, getAccountTypes, updateAccount } from '../services/accountService'
 import { useToastStore } from '../stores/toastStore'
 import type { AccountCategory, AccountType } from '../types/account'
 import { getAccountTypeIcon } from '../utils/accountIcon'
@@ -127,6 +147,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
   saved: []
+  deleted: []
 }>()
 
 const toastStore = useToastStore()
@@ -152,6 +173,8 @@ function selectSvgIcon(icon: SvgIconOption) {
 }
 
 const submitting = ref(false)
+const deleting = ref(false)
+const confirmVisible = ref(false)
 
 let initializing = false
 
@@ -237,6 +260,24 @@ async function handleSubmit() {
   }
 }
 
+async function handleDelete() {
+  if (deleting.value) {
+    return
+  }
+
+  deleting.value = true
+  try {
+    await deleteAccount(props.accountId)
+    toastStore.show('账户已删除')
+    confirmVisible.value = false
+    emit('deleted')
+  } catch (error) {
+    toastStore.show(error instanceof Error ? error.message : '删除账户失败', 'error')
+  } finally {
+    deleting.value = false
+  }
+}
+
 watch(
   () => form.typeId,
   () => {
@@ -251,6 +292,37 @@ watch(() => props.accountId, load, { immediate: true })
 <style scoped>
 .edit-icon-row {
   margin-top: 4px;
+}
+
+.edit-save-actions {
+  display: grid;
+  margin-top: 6px;
+}
+
+.edit-danger-zone {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.delete-account-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(216, 79, 63, 0.78);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.delete-account-button:active {
+  background: transparent;
+  opacity: 0.62;
 }
 
 .icon-picker-grid {

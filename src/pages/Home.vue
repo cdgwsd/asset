@@ -1,5 +1,5 @@
 <template>
-  <main class="app-container">
+  <main class="app-container" @click="closeSwipeActions">
     <AppHeader
       @open-settings="uiStore.openSheet('SETTINGS')"
       @open-trend="uiStore.openSheet('TREND')"
@@ -32,23 +32,14 @@
           :group="group"
           :hide-amount="settingsStore.hideAmount"
           :decimals="settingsStore.amountDecimalPlaces"
-          @select-account="uiStore.openSheet('ACCOUNT_ACTION', $event)"
+          :expanded-account-id="expandedAccountId"
+          @quick-update="openQuickBalance"
+          @edit-account="openEditAccount"
+          @open-actions="expandedAccountId = $event"
+          @close-actions="closeSwipeActions"
         />
       </div>
     </template>
-
-    <AccountActionSheet
-        v-if="uiStore.activeSheet === 'ACCOUNT_ACTION' && uiStore.selectedAccountId"
-        :account-id="uiStore.selectedAccountId"
-        :hide-amount="settingsStore.hideAmount"
-        :decimals="settingsStore.amountDecimalPlaces"
-        hide-overlay
-        @close="uiStore.closeSheet()"
-        @update-balance="uiStore.openSheet('UPDATE_BALANCE', uiStore.selectedAccountId)"
-        @view-trend="uiStore.openSheet('TREND', uiStore.selectedAccountId)"
-        @edit-account="uiStore.openSheet('EDIT_ACCOUNT', uiStore.selectedAccountId)"
-        @deleted="handleSheetSaved"
-      />
 
       <UpdateBalanceSheet
         v-if="uiStore.activeSheet === 'UPDATE_BALANCE' && uiStore.selectedAccountId"
@@ -79,11 +70,11 @@
         hide-overlay
         @close="uiStore.closeSheet()"
         @saved="handleSheetSaved"
+        @deleted="handleSheetSaved"
       />
 
       <TrendSheet
         v-if="uiStore.activeSheet === 'TREND'"
-        :account-id="uiStore.selectedAccountId"
         :hide-amount="settingsStore.hideAmount"
         :decimals="settingsStore.amountDecimalPlaces"
         hide-overlay
@@ -112,7 +103,6 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
-import AccountActionSheet from '../components/AccountActionSheet.vue'
 import AccountFormSheet from '../components/AccountFormSheet.vue'
 import AccountGroup from '../components/AccountGroup.vue'
 import AccountTypeSheet from '../components/AccountTypeSheet.vue'
@@ -137,6 +127,7 @@ const uiStore = useUiStore()
 const summary = computed(() => homeStore.summary)
 const TrendSheet = defineAsyncComponent(() => import('../components/TrendSheet.vue'))
 const selectedAddAccountType = ref<AccountTypeChoiceKey>('cash')
+const expandedAccountId = ref<string | null>(null)
 
 async function refreshHome() {
   await homeStore.refresh(settingsStore.showDeletedAccounts)
@@ -144,16 +135,32 @@ async function refreshHome() {
 
 async function handleSheetSaved() {
   uiStore.closeSheet()
+  closeSwipeActions()
   await refreshHome()
 }
 
 function openAccountTypeSheet() {
+  closeSwipeActions()
   uiStore.openSheet('SELECT_ACCOUNT_TYPE')
 }
 
 function handleAccountTypeSelected(type: AccountTypeChoiceKey) {
   selectedAddAccountType.value = type
   uiStore.openSheet('ADD_ACCOUNT')
+}
+
+function closeSwipeActions() {
+  expandedAccountId.value = null
+}
+
+function openQuickBalance(accountId: string) {
+  closeSwipeActions()
+  uiStore.openSheet('UPDATE_BALANCE', accountId)
+}
+
+function openEditAccount(accountId: string) {
+  closeSwipeActions()
+  uiStore.openSheet('EDIT_ACCOUNT', accountId)
 }
 
 onMounted(async () => {

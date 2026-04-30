@@ -5,7 +5,6 @@ export type ActiveSheet =
   | 'SELECT_ACCOUNT_TYPE'
   | 'ADD_ACCOUNT'
   | 'EDIT_ACCOUNT'
-  | 'ACCOUNT_ACTION'
   | 'UPDATE_BALANCE'
   | 'TREND'
   | 'SETTINGS'

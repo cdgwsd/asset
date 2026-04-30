@@ -11,7 +11,11 @@
         :account="account"
         :hide-amount="hideAmount"
         :decimals="decimals"
-        @select="$emit('select-account', $event)"
+        :expanded="expandedAccountId === account.accountId"
+        @quick-update="$emit('quick-update', $event)"
+        @edit="$emit('edit-account', $event)"
+        @open-actions="$emit('open-actions', $event)"
+        @close-actions="$emit('close-actions')"
       />
     </div>
   </section>
@@ -28,10 +32,14 @@ const props = defineProps<{
   group: AccountGroupView
   hideAmount: boolean
   decimals: number
+  expandedAccountId: string | null
 }>()
 
 defineEmits<{
-  'select-account': [accountId: string]
+  'quick-update': [accountId: string]
+  'edit-account': [accountId: string]
+  'open-actions': [accountId: string]
+  'close-actions': []
 }>()
 
 const groupTotalText = computed(() =>
@@ -71,7 +79,7 @@ const groupTotalText = computed(() =>
   background: var(--color-surface);
 }
 
-.account-list .account-row:last-child {
+.account-list :deep(.account-swipe:last-child .account-row) {
   border-bottom: 0;
 }
 </style>

@@ -5,7 +5,7 @@
     </button>
     <h1>钱包</h1>
     <div class="header-actions">
-      <button class="icon-button" type="button" aria-label="查看趋势" @click="$emit('open-trend')">
+      <button class="icon-button" type="button" aria-label="查看整体资产趋势" @click="$emit('open-trend')">
         <AppIcon :icon="LineChart" />
       </button>
       <button class="icon-button add-button" type="button" aria-label="新增账户" @click="$emit('add-account')">
