@@ -10,9 +10,6 @@
         <AppIcon :icon="hideAmount ? EyeOff : Eye" :size="22" />
       </button>
     </div>
-    <p v-if="showBreakdown" class="net-breakdown">
-      总资产 {{ totalAssetText }} − 总负债 {{ totalLiabilityText }}
-    </p>
   </section>
 </template>
 
@@ -26,17 +23,11 @@ const props = defineProps<{
   netAsset: number
   hideAmount: boolean
   decimals: number
-  totalAsset?: number
-  totalLiability?: number
 }>()
 
 defineEmits<{
   'toggle-hide': []
 }>()
-
-const showBreakdown = computed(() =>
-  props.totalAsset !== undefined && props.totalLiability !== undefined
-)
 
 const netAssetText = computed(() =>
   formatMoney(Math.abs(props.netAsset), {
@@ -45,26 +36,11 @@ const netAssetText = computed(() =>
     negative: props.netAsset < 0
   })
 )
-
-const totalAssetText = computed(() =>
-  formatMoney(props.totalAsset ?? 0, {
-    hide: props.hideAmount,
-    decimals: props.decimals
-  })
-)
-
-const totalLiabilityText = computed(() =>
-  formatMoney(props.totalLiability ?? 0, {
-    hide: props.hideAmount,
-    decimals: props.decimals,
-    negative: (props.totalLiability ?? 0) > 0
-  })
-)
 </script>
 
 <style scoped>
 .net-card {
-  padding: 30px 4px 20px;
+  padding: 28px 4px 18px;
   text-align: center;
 }
 
@@ -80,12 +56,5 @@ const totalLiabilityText = computed(() =>
   font-weight: 760;
   letter-spacing: -0.05em;
   line-height: 1.05;
-}
-
-.net-breakdown {
-  margin: 10px 0 0;
-  color: var(--color-faint);
-  font-size: 13px;
-  font-weight: 500;
 }
 </style>

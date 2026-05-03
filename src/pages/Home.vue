@@ -11,8 +11,6 @@
     <template v-if="summary">
       <NetAssetCard
         :net-asset="summary.netAsset"
-        :total-asset="summary.totalAsset"
-        :total-liability="summary.totalLiability"
         :hide-amount="settingsStore.hideAmount"
         :decimals="settingsStore.amountDecimalPlaces"
         @toggle-hide="settingsStore.toggleHideAmount()"
