@@ -161,7 +161,7 @@ async function handleCreateCustom() {
   margin: 0;
   font-size: 34px;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
 .account-type-list {
@@ -207,7 +207,7 @@ async function handleCreateCustom() {
 .type-option-copy strong {
   font-size: 18px;
   font-weight: 740;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .type-option-copy small {

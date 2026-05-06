@@ -40,8 +40,20 @@ const netAssetText = computed(() =>
 
 <style scoped>
 .net-card {
-  padding: 28px 4px 18px;
+  display: grid;
+  gap: 12px;
+  margin: 6px 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  padding: 28px 18px 24px;
   text-align: center;
+}
+
+.net-card .eyebrow {
+  justify-content: center;
+  margin: 0;
 }
 
 .net-amount-row {
@@ -52,9 +64,21 @@ const netAssetText = computed(() =>
 }
 
 .net-amount {
-  font-size: clamp(34px, 11vw, 48px);
+  overflow-wrap: anywhere;
+  font-size: 44px;
   font-weight: 760;
-  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
   line-height: 1.05;
+}
+
+@media (max-width: 360px) {
+  .net-card {
+    padding: 24px 14px 22px;
+  }
+
+  .net-amount {
+    font-size: 38px;
+  }
 }
 </style>

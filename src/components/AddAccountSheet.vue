@@ -384,7 +384,7 @@ void getAccountTypes().then((types) => {
   margin: 0 0 6px;
   font-size: 28px;
   font-weight: 780;
-  letter-spacing: -0.05em;
+  letter-spacing: 0;
 }
 
 .form-choice-row {

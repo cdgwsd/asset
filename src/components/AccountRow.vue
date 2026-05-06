@@ -8,6 +8,7 @@
       :class="{ deleted: account.isDeleted, dragging, changed: balanceChanged }"
       type="button"
       :style="rowStyle"
+      :aria-label="`${account.name}，${account.typeName}，当前余额 ${balanceText}`"
       @click.stop="handleClick"
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"
@@ -21,9 +22,12 @@
         <AppIcon v-else-if="accountIconName.startsWith('fluent-emoji-flat:')" :iconify="accountIconName" :size="24" />
         <AppIcon v-else :icon="accountIcon" :size="18" />
       </span>
-      <span class="account-name">
-        {{ account.name }}
-        <small v-if="account.isDeleted">已删除</small>
+      <span class="account-copy">
+        <span class="account-name">{{ account.name }}</span>
+        <span class="account-meta">
+          <span>{{ account.typeName }}</span>
+          <small v-if="account.isDeleted">已删除</small>
+        </span>
       </span>
       <span class="account-balance">{{ balanceText }}</span>
     </button>
@@ -38,7 +42,7 @@ import { getAccountIcon, resolveAccountIconName } from '../utils/accountIcon'
 import { formatAccountBalance } from '../utils/money'
 import { getSvgIconUrl } from '../utils/svgIcons'
 
-const ACTION_WIDTH = 84
+const ACTION_WIDTH = 92
 
 const props = defineProps<{
   account: AccountRowView
@@ -86,7 +90,7 @@ const customSvgUrl = computed(() => {
 const accountIcon = computed(() => getAccountIcon(props.account))
 const accountIconName = computed(() => resolveAccountIconName(props.account))
 const rowOffset = computed(() => (dragging.value ? dragOffset.value : props.expanded ? -ACTION_WIDTH : 0))
-const rowStyle = computed(() => ({ transform: `translateX(${rowOffset.value}px)` }))
+const rowStyle = computed(() => ({ transform: `translate3d(${rowOffset.value}px, 0, 0)` }))
 
 function handleClick(event: MouseEvent) {
   if (suppressClick.value) {
@@ -282,7 +286,7 @@ watch(
     changedTimer = window.setTimeout(() => {
       balanceChanged.value = false
       changedTimer = undefined
-    }, 650)
+    }, 520)
   }
 )
 </script>
@@ -299,7 +303,7 @@ watch(
   position: absolute;
   inset: 0 0 0 auto;
   display: grid;
-  width: 84px;
+  width: 92px;
   grid-template-columns: 1fr;
 }
 
@@ -308,6 +312,7 @@ watch(
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
+  text-align: center;
 }
 
 .swipe-action.edit {
@@ -317,23 +322,24 @@ watch(
 .account-row {
   display: grid;
   width: 100%;
-  min-height: 58px;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
+  min-height: 68px;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border: 0;
   border-bottom: 1px solid var(--color-border);
-  padding: 0 8px;
+  padding: 10px 14px 10px 12px;
   background: var(--color-surface);
   text-align: left;
   user-select: none;
   cursor: pointer;
   transition:
-    transform 140ms var(--ease-standard),
+    transform var(--transition-normal) var(--ease-standard),
     background-color var(--transition-fast) var(--ease-standard),
     opacity var(--transition-fast) var(--ease-standard);
   -webkit-user-select: none;
   touch-action: pan-y;
+  contain: layout paint;
 }
 
 .account-row.dragging {
@@ -341,37 +347,72 @@ watch(
   will-change: transform;
 }
 
-.account-row:active {
+button.account-row:active {
   background: var(--color-surface-strong);
-  opacity: 0.94;
+  opacity: 0.96;
 }
 
 .account-row.deleted {
   opacity: 0.55;
 }
 
-.account-name {
-  display: grid;
-  gap: 2px;
-  font-size: 16px;
-  font-weight: 600;
+.account-row .account-icon {
+  width: 34px;
+  height: 34px;
+  margin-left: 0;
 }
 
-.account-name small {
+.account-copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.account-name {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.18;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
   color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1.2;
+}
+
+.account-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-meta small {
+  flex: 0 0 auto;
+  color: var(--color-faint);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 650;
 }
 
 .account-balance {
+  max-width: 148px;
   border-radius: 999px;
-  margin-right: -4px;
-  padding: 3px 6px;
+  margin-right: -2px;
+  padding: 4px 6px;
+  overflow-wrap: anywhere;
   font-size: 15px;
   font-weight: 650;
-  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  line-height: 1.18;
   text-align: right;
-  white-space: nowrap;
   transition:
     background-color var(--transition-list) var(--ease-standard),
     color var(--transition-list) var(--ease-standard);
@@ -380,5 +421,24 @@ watch(
 .account-row.changed .account-balance {
   background: rgba(47, 154, 98, 0.12);
   color: var(--color-success);
+}
+
+@media (max-width: 360px) {
+  .account-row {
+    grid-template-columns: 38px minmax(0, 1fr) minmax(86px, auto);
+    gap: 8px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .account-row .account-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .account-balance {
+    max-width: 118px;
+    font-size: 14px;
+  }
 }
 </style>

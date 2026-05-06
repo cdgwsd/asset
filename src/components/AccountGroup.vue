@@ -54,14 +54,15 @@ const groupTotalText = computed(() =>
 <style scoped>
 .account-group {
   display: grid;
-  gap: 8px;
+  gap: 9px;
 }
 
 .group-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2px;
+  gap: 12px;
+  padding: 0 4px;
   color: var(--color-muted);
   font-size: 13px;
   font-weight: 700;
@@ -70,6 +71,8 @@ const groupTotalText = computed(() =>
 .group-heading strong {
   color: var(--color-faint);
   font-weight: 650;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .account-list {
@@ -78,6 +81,7 @@ const groupTotalText = computed(() =>
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .account-list-enter-active,

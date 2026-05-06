@@ -13,9 +13,7 @@ body {
   min-height: 100%;
   margin: 0;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 18% -8%, rgba(255, 224, 179, 0.44), transparent 32%),
-    linear-gradient(180deg, #ffffff 0%, var(--color-bg) 42%);
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 42%);
   color: var(--color-text);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
   touch-action: manipulation;
@@ -26,9 +24,7 @@ body {
 }
 
 :root[data-theme='dark'] body {
-  background:
-    radial-gradient(circle at 18% -8%, rgba(102, 80, 48, 0.28), transparent 32%),
-    linear-gradient(180deg, #161617 0%, var(--color-bg) 42%);
+  background: linear-gradient(180deg, #161617 0%, var(--color-bg) 42%);
 }
 
 button,
@@ -67,6 +63,7 @@ a:active,
 [role='button']:active,
 .clickable:active {
   opacity: 0.82;
+  transform: translate3d(0, 1px, 0);
 }
 
 .app-icon {
@@ -157,10 +154,11 @@ a:active,
   cursor: pointer;
 }
 
-.icon-button:active,
-.close-button:active,
-.eye-button:active {
+button.icon-button:active,
+button.close-button:active,
+button.eye-button:active {
   background: var(--color-surface-strong);
+  transform: scale(0.96);
 }
 
 .eyebrow,
@@ -191,13 +189,13 @@ a:active,
 
 .groups-stack {
   display: grid;
-  gap: 24px;
+  gap: 18px;
 }
 
 .account-icon {
   display: inline-flex;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   align-items: center;
   justify-content: center;
   margin-left: 4px;
@@ -281,7 +279,7 @@ a:active,
 
 .sheet-header h2 {
   font-size: 24px;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
 }
 
 .close-button {
@@ -486,9 +484,11 @@ a:active,
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 16px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-strong);
+  padding: 16px;
 }
 
 .trend-stat {
@@ -511,6 +511,7 @@ a:active,
   font-weight: 760;
   letter-spacing: 0;
   line-height: 1.08;
+  font-variant-numeric: tabular-nums;
 }
 
 .trend-change {
@@ -537,11 +538,26 @@ a:active,
 .trend-chart-section {
   display: grid;
   gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 12px;
 }
 
 .chart {
   width: 100%;
-  height: 248px;
+  height: 224px;
+}
+
+.empty-chart {
+  min-height: 168px;
+  justify-content: center;
+  text-align: center;
+}
+
+.chart-hint {
+  justify-content: center;
+  text-align: center;
 }
 
 @media (max-width: 380px) {
@@ -555,7 +571,7 @@ a:active,
   }
 
   .chart {
-    height: 228px;
+    height: 206px;
   }
 }
 

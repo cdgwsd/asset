@@ -32,11 +32,11 @@
         <div v-show="netTrend.length > 0" ref="netChartRef" class="chart"></div>
         <p v-if="netTrend.length === 0" class="empty-chart icon-label">
           <AppIcon :icon="ChartNoAxesColumn" :size="17" />
-          暂无趋势数据，更新余额后会自动生成。
+          暂无趋势数据，更新任意账户余额后会自动生成月度曲线。
         </p>
         <p v-else-if="netTrend.length < 2" class="chart-hint icon-label">
           <AppIcon :icon="ChartNoAxesColumn" :size="17" />
-          再积累一个月后，就能看到月度变化。
+          目前只有一个月份，继续记录后会显示变化。
         </p>
       </section>
   </BottomSheet>
@@ -143,16 +143,26 @@ function renderNetChart() {
   const textColor = cssVar('--color-text', '#111111')
   const mutedColor = cssVar('--color-muted', '#75757c')
   const borderColor = cssVar('--color-border', 'rgba(17, 17, 17, 0.08)')
+  const surfaceColor = cssVar('--color-surface', '#ffffff')
 
   netChart = netChart ?? init(netChartRef.value)
   netChart.setOption(
     {
-      animationDuration: 180,
+      animationDuration: 160,
       animationEasing: 'cubicOut',
-      grid: { left: 4, right: 8, top: 18, bottom: 10, containLabel: true },
+      grid: { left: 0, right: 0, top: 14, bottom: 6, containLabel: true },
       tooltip: {
         trigger: 'axis',
         confine: true,
+        padding: [8, 10],
+        backgroundColor: surfaceColor,
+        borderColor,
+        borderWidth: 1,
+        textStyle: {
+          color: textColor,
+          fontSize: 12,
+          fontWeight: 600
+        },
         axisPointer: {
           type: 'line',
           lineStyle: { color: borderColor, width: 1 }
@@ -176,16 +186,19 @@ function renderNetChart() {
           color: mutedColor,
           hideOverlap: true,
           margin: 10,
+          fontSize: 11,
           formatter: (value: string) => formatMonthLabel(value)
         },
         axisTick: { show: false },
-        axisLine: { lineStyle: { color: borderColor } }
+        axisLine: { show: false }
       },
       yAxis: {
         type: 'value',
         scale: true,
+        splitNumber: 3,
         axisLabel: {
           color: mutedColor,
+          fontSize: 11,
           formatter: (value: number) => shortMoneyLabel(value)
         },
         axisLine: { show: false },
@@ -196,10 +209,10 @@ function renderNetChart() {
         {
           name: '净资产',
           type: 'line',
-          smooth: true,
+          smooth: netTrend.value.length > 2,
           symbol: 'circle',
-          symbolSize: 4,
-          showSymbol: netTrend.value.length <= 18,
+          symbolSize: 5,
+          showSymbol: netTrend.value.length <= 12,
           data: netTrend.value.map((point) => point.netAsset),
           lineStyle: { width: 2, color: textColor },
           itemStyle: { color: textColor },

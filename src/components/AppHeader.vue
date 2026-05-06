@@ -32,11 +32,11 @@ defineEmits<{
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: 72px 1fr 72px;
+  grid-template-columns: 96px 1fr 96px;
   align-items: center;
-  margin: -10px -20px 8px;
+  margin: -10px -20px 6px;
   padding: calc(10px + var(--safe-top)) 20px 10px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.82));
+  background: linear-gradient(180deg, rgba(247, 247, 248, 0.94), rgba(247, 247, 248, 0.82));
   backdrop-filter: blur(8px);
 }
 

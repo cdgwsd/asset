@@ -50,20 +50,15 @@ const totalLiabilityText = computed(() =>
 .summary-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 0 0 26px;
+  gap: 10px;
+  margin: 0 0 12px;
 }
 
 .summary-bar div {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: var(--shadow-card);
-  padding: 15px 16px;
-}
-
-:root[data-theme='dark'] .summary-bar div {
-  background: rgba(26, 26, 28, 0.86);
+  background: var(--color-surface);
+  padding: 14px 15px;
 }
 
 .summary-bar span {
@@ -75,6 +70,7 @@ const totalLiabilityText = computed(() =>
 
 .summary-bar strong {
   font-size: 17px;
-  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 </style>
