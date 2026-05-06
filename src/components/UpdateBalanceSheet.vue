@@ -18,10 +18,10 @@
       </header>
 
       <form class="form-stack" @submit.prevent="handleSubmit">
-        <div v-if="account" class="balance-update-summary">
+        <div class="balance-update-summary" :class="{ loading: !account }" :aria-busy="!account">
           <div>
             <span>账户名称</span>
-            <strong>{{ account.name }}</strong>
+            <strong>{{ accountNameText }}</strong>
           </div>
           <div>
             <span>当前余额</span>
@@ -36,7 +36,7 @@
             inputmode="decimal"
             autocomplete="off"
             placeholder="例如：17,258.14"
-            enterkeyhint="next"
+            enterkeyhint="done"
             @beforeinput="handleMoneyBeforeInput"
             @paste="handleMoneyPaste"
             @focus="handleMoneyFocus"
@@ -204,11 +204,13 @@ function handleMoneyBlur(event: FocusEvent) {
 
 const currentBalanceText = computed(() => {
   if (!account.value) {
-    return ''
+    return '载入中'
   }
 
   return formatAccountBalance(account.value.currentBalance, account.value.category)
 })
+
+const accountNameText = computed(() => account.value?.name ?? '载入中')
 
 watch(() => props.accountId, loadAccount, { immediate: true })
 </script>

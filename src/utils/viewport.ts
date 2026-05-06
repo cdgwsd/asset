@@ -4,10 +4,15 @@ const SHEET_HEIGHT_RATIO = 0.8
 
 let stableAppHeight = 0
 let frameId: number | undefined
+let lockedAppScrollTop: number | null = null
 
 function isFormFieldActive() {
   const activeElement = document.activeElement
   return activeElement instanceof HTMLElement && Boolean(activeElement.closest('input, textarea, select'))
+}
+
+function appScroller() {
+  return document.querySelector<HTMLElement>('.app-container')
 }
 
 function setRootPixelVar(name: string, value: number) {
@@ -21,6 +26,32 @@ function resetRootScroll() {
 
   document.documentElement.scrollTop = 0
   document.body.scrollTop = 0
+}
+
+function lockAppScrollPosition() {
+  const scroller = appScroller()
+  if (!scroller || lockedAppScrollTop !== null) {
+    return
+  }
+
+  lockedAppScrollTop = scroller.scrollTop
+}
+
+function restoreAppScrollPosition() {
+  const scroller = appScroller()
+  if (!scroller || lockedAppScrollTop === null || scroller.scrollTop === lockedAppScrollTop) {
+    return
+  }
+
+  scroller.scrollTop = lockedAppScrollTop
+}
+
+function releaseAppScrollPosition() {
+  if (isFormFieldActive()) {
+    return
+  }
+
+  lockedAppScrollTop = null
 }
 
 function updateViewportVars() {
@@ -51,6 +82,9 @@ function updateViewportVars() {
   document.documentElement.style.setProperty('--stable-vh', `${stableAppHeight * 0.01}px`)
   document.documentElement.dataset.keyboard = keyboardOpen ? 'open' : 'closed'
   resetRootScroll()
+  if (isFormFieldActive()) {
+    restoreAppScrollPosition()
+  }
 }
 
 function scheduleViewportUpdate() {
@@ -72,12 +106,30 @@ export function startViewportKeyboardAdapter() {
     window.setTimeout(scheduleViewportUpdate, 320)
   })
   window.addEventListener('scroll', resetRootScroll, { passive: true })
-  document.addEventListener('focusin', scheduleViewportUpdate, true)
+  document.addEventListener(
+    'focusin',
+    () => {
+      lockAppScrollPosition()
+      scheduleViewportUpdate()
+    },
+    true
+  )
   document.addEventListener(
     'focusout',
     () => {
       window.setTimeout(scheduleViewportUpdate, 180)
+      window.setTimeout(releaseAppScrollPosition, 220)
       window.setTimeout(scheduleViewportUpdate, 360)
+      window.setTimeout(releaseAppScrollPosition, 420)
+    },
+    true
+  )
+  document.addEventListener(
+    'scroll',
+    (event) => {
+      if (event.target === appScroller() && isFormFieldActive()) {
+        restoreAppScrollPosition()
+      }
     },
     true
   )
