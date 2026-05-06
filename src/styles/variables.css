@@ -33,7 +33,13 @@
   --motion-list-enter-y: 4px;
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
-  --stable-vh: 1vh;
+  --vvh: 100dvh;
+  --app-height: 100dvh;
+  --sheet-height: 80dvh;
+  --sheet-visible-height: 80dvh;
+  --keyboard-height: 0px;
+  --visual-offset-top: 0px;
+  --stable-vh: 1dvh;
 }
 
 :root[data-theme='dark'] {

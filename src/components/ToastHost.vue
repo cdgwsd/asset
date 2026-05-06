@@ -15,7 +15,7 @@ const toastStore = useToastStore()
 <style scoped>
 .toast-host {
   position: fixed;
-  bottom: calc(18px + var(--safe-bottom));
+  bottom: calc(18px + var(--safe-bottom) + var(--keyboard-height));
   right: 16px;
   left: 16px;
   z-index: 1200;

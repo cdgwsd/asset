@@ -3,17 +3,23 @@
 }
 
 html {
-  min-height: 100%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   background: var(--color-bg);
   touch-action: manipulation;
+  overscroll-behavior: none;
 }
 
 body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   min-width: 320px;
-  min-height: 100%;
   margin: 0;
-  overflow-x: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 42%);
+  overflow: hidden;
+  background: var(--color-bg);
   color: var(--color-text);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
   touch-action: manipulation;
@@ -23,7 +29,15 @@ body {
   overscroll-behavior: none;
 }
 
-:root[data-theme='dark'] body {
+#app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 42%);
+  isolation: isolate;
+}
+
+:root[data-theme='dark'] #app {
   background: linear-gradient(180deg, #161617 0%, var(--color-bg) 42%);
 }
 
@@ -73,10 +87,17 @@ a:active,
 
 .app-container {
   width: min(100%, 520px);
-  min-height: 100svh;
-  min-height: calc(var(--stable-vh) * 100);
+  height: 100dvh;
+  height: var(--app-height);
+  max-height: var(--app-height);
   margin: 0 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: calc(10px + var(--safe-top)) 20px calc(28px + var(--safe-bottom));
+  scroll-padding: calc(70px + var(--safe-top)) 0 calc(80px + var(--safe-bottom));
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .page-route-enter-active,
@@ -659,6 +680,7 @@ button.eye-button:active {
   position: fixed;
   inset: 0;
   z-index: 999;
+  height: var(--app-height);
   background: rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(4px);
   touch-action: manipulation;

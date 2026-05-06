@@ -53,6 +53,7 @@ defineEmits<{
   inset: 0;
   z-index: 1100;
   display: grid;
+  height: var(--app-height);
   place-items: center;
   padding: 22px;
   background: rgba(0, 0, 0, 0.2);
