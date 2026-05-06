@@ -22,25 +22,6 @@
         :decimals="settingsStore.amountDecimalPlaces"
       />
 
-      <button
-        v-if="summary.groups.length > 0"
-        class="trend-entry"
-        type="button"
-        aria-label="查看净资产趋势"
-        @click.stop="openTrendSheet"
-      >
-        <span class="trend-entry-main">
-          <span class="trend-entry-icon" aria-hidden="true">
-            <AppIcon :icon="LineChart" :size="18" />
-          </span>
-          <span class="trend-entry-copy">
-            <strong>净资产趋势</strong>
-            <small>{{ trendEntryHint }}</small>
-          </span>
-        </span>
-        <AppIcon class="trend-entry-arrow" :icon="ChevronRight" :size="18" />
-      </button>
-
       <EmptyState v-if="summary.groups.length === 0" @add-account="openAccountTypeSheet" />
       <section v-else class="accounts-section" aria-labelledby="accounts-title">
         <div class="section-heading">
@@ -140,12 +121,10 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ChevronRight, LineChart } from 'lucide-vue-next'
 import AccountFormSheet from '../components/AccountFormSheet.vue'
 import AccountGroup from '../components/AccountGroup.vue'
 import AccountTypeSheet from '../components/AccountTypeSheet.vue'
 import AddAccountSheet from '../components/AddAccountSheet.vue'
-import AppIcon from '../components/AppIcon.vue'
 import AppHeader from '../components/AppHeader.vue'
 import EmptyState from '../components/EmptyState.vue'
 import NetAssetCard from '../components/NetAssetCard.vue'
@@ -176,7 +155,6 @@ let ignoreNextPopState = false
 
 const accountCount = computed(() => summary.value?.groups.reduce((count, group) => count + group.accounts.length, 0) ?? 0)
 const accountCountText = computed(() => `${accountCount.value} 个账户`)
-const trendEntryHint = computed(() => (accountCount.value > 1 ? '查看月度净资产变化' : '继续记录后形成曲线'))
 
 async function refreshHome() {
   await homeStore.refresh(settingsStore.showDeletedAccounts)
@@ -339,74 +317,12 @@ watch(
 </script>
 
 <style scoped>
-.trend-entry {
-  display: flex;
-  width: 100%;
-  min-height: 58px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin: 0 0 22px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-  padding: 11px 13px;
-  text-align: left;
-  cursor: pointer;
-}
-
-button.trend-entry:active {
-  background: var(--color-surface-strong);
-  opacity: 0.94;
-}
-
-.trend-entry-main {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 12px;
-}
-
-.trend-entry-icon {
-  display: inline-flex;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  background: var(--color-surface-strong);
-  color: var(--color-muted);
-}
-
-.trend-entry-copy {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.trend-entry-copy strong {
-  overflow: hidden;
-  font-size: 15px;
-  font-weight: 740;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trend-entry-copy small,
 .section-heading p,
 .section-heading span {
   color: var(--color-muted);
   font-size: 12px;
   font-weight: 650;
   line-height: 1.3;
-}
-
-.trend-entry-arrow {
-  flex: 0 0 auto;
-  color: var(--color-faint);
 }
 
 .accounts-section {
@@ -436,13 +352,5 @@ button.trend-entry:active {
 
 .section-heading span {
   flex: 0 0 auto;
-}
-
-@media (max-width: 360px) {
-  .trend-entry {
-    margin-bottom: 18px;
-    padding-right: 12px;
-    padding-left: 12px;
-  }
 }
 </style>
