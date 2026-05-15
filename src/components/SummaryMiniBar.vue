@@ -50,14 +50,15 @@ const totalLiabilityText = computed(() =>
 .summary-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
   margin: 0 0 12px;
 }
 
 .summary-bar div {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
   padding: 14px 15px;
 }
 

@@ -25,21 +25,27 @@ defineEmits<{
 .empty-state {
   display: grid;
   justify-items: center;
-  gap: 10px;
-  padding: 38px 22px;
+  gap: 12px;
+  padding: 44px 24px;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.54);
+  background: rgba(255, 255, 255, 0.48);
   text-align: center;
+  backdrop-filter: blur(4px);
+}
+
+:root[data-theme='dark'] .empty-state {
+  background: rgba(28, 28, 30, 0.4);
 }
 
 .empty-illustration {
   display: grid;
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   place-items: center;
   border-radius: 20px;
   background: var(--color-surface-strong);
   color: var(--color-muted);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 </style>

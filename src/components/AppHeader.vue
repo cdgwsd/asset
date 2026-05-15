@@ -36,25 +36,26 @@ defineEmits<{
   align-items: center;
   margin: -10px -20px 6px;
   padding: calc(10px + var(--safe-top)) 20px 10px;
-  background: linear-gradient(180deg, rgba(247, 247, 248, 0.94), rgba(247, 247, 248, 0.82));
-  backdrop-filter: blur(8px);
+  background: linear-gradient(180deg, rgba(245, 245, 247, 0.96) 70%, rgba(245, 245, 247, 0.78));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 :root[data-theme='dark'] .app-header {
-  background: linear-gradient(180deg, rgba(14, 14, 15, 0.96), rgba(14, 14, 15, 0.84));
+  background: linear-gradient(180deg, rgba(10, 10, 11, 0.96) 70%, rgba(10, 10, 11, 0.78));
 }
 
 .app-header h1 {
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   text-align: center;
 }
 
 .header-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
 }
 </style>

@@ -266,8 +266,9 @@ watch(
   align-items: flex-end;
   justify-content: center;
   height: var(--app-height);
-  background: rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   touch-action: manipulation;
   animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
   transition: opacity var(--transition-overlay) var(--ease-exit);
@@ -294,9 +295,9 @@ watch(
   flex-direction: column;
   margin: 0 auto;
   overflow: hidden;
-  border-radius: 30px 30px 0 0;
+  border-radius: 28px 28px 0 0;
   background: var(--color-surface);
-  box-shadow: 0 -12px 38px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-elevated);
   transform: translate3d(0, var(--sheet-drag-y, 0), 0);
   transition:
     transform var(--transition-sheet) var(--ease-standard),
@@ -320,12 +321,13 @@ watch(
 }
 
 .bottom-sheet-handle {
-  width: 44px;
+  width: 36px;
   height: 5px;
   flex: 0 0 auto;
-  margin: 12px auto 16px;
+  margin: 10px auto 14px;
   border-radius: 999px;
-  background: var(--color-border);
+  background: var(--color-faint);
+  opacity: 0.45;
 }
 
 .bottom-sheet-content {

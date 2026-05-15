@@ -121,18 +121,20 @@
       </form>
   </BottomSheet>
 
-  <Transition name="dialog-pop">
-    <ConfirmDialog
-      v-if="confirmVisible"
-      title="确认删除账户？"
-      message="确定要删除该账户吗？删除后该账户将不再显示。"
-      confirm-text="确认删除"
-      :busy="deleting"
-      danger
-      @cancel="confirmVisible = false"
-      @confirm="handleDelete"
-    />
-  </Transition>
+  <Teleport to="body">
+    <Transition name="dialog-pop">
+      <ConfirmDialog
+        v-if="confirmVisible"
+        title="确认删除账户？"
+        message="确定要删除该账户吗？删除后该账户将不再显示。"
+        confirm-text="确认删除"
+        :busy="deleting"
+        danger
+        @cancel="confirmVisible = false"
+        @confirm="handleDelete"
+      />
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">

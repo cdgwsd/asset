@@ -108,13 +108,13 @@ onBeforeUnmount(() => {
 <style scoped>
 .net-card {
   display: grid;
-  gap: 12px;
-  margin: 6px 0 12px;
+  gap: 14px;
+  margin: 4px 0 10px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
-  padding: 28px 18px 24px;
+  padding: 26px 18px 22px;
   text-align: center;
 }
 
@@ -128,16 +128,16 @@ onBeforeUnmount(() => {
   min-width: 0;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .net-amount {
   min-width: 0;
   overflow: hidden;
   font-size: 38px;
-  font-weight: 760;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
   line-height: 1.05;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -145,7 +145,11 @@ onBeforeUnmount(() => {
 
 @media (max-width: 360px) {
   .net-card {
-    padding: 24px 14px 22px;
+    padding: 22px 14px 20px;
+  }
+
+  .net-amount {
+    font-size: 34px;
   }
 }
 </style>

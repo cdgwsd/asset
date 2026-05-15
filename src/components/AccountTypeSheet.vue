@@ -159,9 +159,9 @@ async function handleCreateCustom() {
 
 .account-type-header h2 {
   margin: 0;
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
 }
 
 .account-type-list {
@@ -171,14 +171,14 @@ async function handleCreateCustom() {
 
 .account-type-option {
   display: grid;
-  min-height: 82px;
-  grid-template-columns: 58px minmax(0, 1fr);
+  min-height: 76px;
+  grid-template-columns: 52px minmax(0, 1fr);
   align-items: center;
   gap: 14px;
   border: 0;
-  border-radius: 20px;
+  border-radius: 16px;
   background: transparent;
-  padding: 8px 4px;
+  padding: 8px 8px;
   text-align: left;
   cursor: pointer;
 }
@@ -190,13 +190,14 @@ async function handleCreateCustom() {
 
 .type-option-icon {
   display: inline-flex;
-  width: 50px;
-  height: 50px;
+  width: 46px;
+  height: 46px;
   align-items: center;
   justify-content: center;
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--color-surface-strong);
   color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .type-option-copy {
@@ -205,8 +206,8 @@ async function handleCreateCustom() {
 }
 
 .type-option-copy strong {
-  font-size: 18px;
-  font-weight: 740;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -241,7 +242,7 @@ async function handleCreateCustom() {
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--color-border);
-  border-radius: 15px;
+  border-radius: 12px;
   background: var(--color-surface-strong);
   color: var(--color-text);
   padding: 0 14px;
@@ -250,12 +251,19 @@ async function handleCreateCustom() {
   scroll-margin: 96px;
   transition:
     background-color var(--transition-fast) var(--ease-standard),
-    border-color var(--transition-fast) var(--ease-standard);
+    border-color var(--transition-fast) var(--ease-standard),
+    box-shadow var(--transition-fast) var(--ease-standard);
 }
 
 .custom-field input:focus,
 .custom-select:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.06);
+}
+
+:root[data-theme='dark'] .custom-field input:focus,
+:root[data-theme='dark'] .custom-select:focus {
+  box-shadow: 0 0 0 3px rgba(245, 245, 247, 0.08);
 }
 
 .custom-form-actions {

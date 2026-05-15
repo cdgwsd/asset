@@ -21,7 +21,7 @@ body {
   overflow: hidden;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
   touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
@@ -33,12 +33,12 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, var(--color-bg) 42%);
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg) 36%);
   isolation: isolate;
 }
 
 :root[data-theme='dark'] #app {
-  background: linear-gradient(180deg, #161617 0%, var(--color-bg) 42%);
+  background: linear-gradient(180deg, #141415 0%, var(--color-bg) 36%);
 }
 
 button,
@@ -76,8 +76,8 @@ button:not(:disabled):active,
 a:active,
 [role='button']:active,
 .clickable:active {
-  opacity: 0.82;
-  transform: translate3d(0, 1px, 0);
+  opacity: 0.75;
+  transform: translate3d(0, 0.5px, 0) scale(0.995);
 }
 
 .app-icon {
@@ -183,7 +183,7 @@ button.icon-button:active,
 button.close-button:active,
 button.eye-button:active {
   background: var(--color-surface-strong);
-  transform: scale(0.96);
+  transform: scale(0.92);
 }
 
 .eyebrow,
@@ -203,28 +203,29 @@ button.eye-button:active {
 .loading-card {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.76);
+  background: rgba(255, 255, 255, 0.82);
   box-shadow: var(--shadow-card);
+  backdrop-filter: blur(8px);
 }
 
 :root[data-theme='dark'] .about-card,
 :root[data-theme='dark'] .loading-card {
-  background: rgba(26, 26, 28, 0.86);
+  background: rgba(28, 28, 30, 0.88);
 }
 
 .groups-stack {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .account-icon {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   align-items: center;
   justify-content: center;
   margin-left: 4px;
-  border-radius: 50%;
+  border-radius: 12px;
   background: var(--color-surface-strong);
   color: var(--color-muted);
 }
@@ -252,7 +253,7 @@ button.eye-button:active {
 .secondary-button {
   min-height: 48px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 14px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -260,6 +261,7 @@ button.eye-button:active {
 .primary-button {
   background: var(--color-primary);
   color: var(--color-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .primary-button.danger {
@@ -270,6 +272,7 @@ button.eye-button:active {
 .secondary-button {
   background: var(--color-surface-strong);
   color: var(--color-text);
+  box-shadow: 0 0 0 1px var(--color-border);
 }
 
 
@@ -303,7 +306,8 @@ button.eye-button:active {
 }
 
 .sheet-header h2 {
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: 780;
   letter-spacing: 0;
 }
 
@@ -311,6 +315,7 @@ button.eye-button:active {
   margin-top: -8px;
   background: var(--color-surface-strong);
   line-height: 1;
+  box-shadow: 0 0 0 1px var(--color-border);
 }
 
 .icon-label,
@@ -340,13 +345,13 @@ button.eye-button:active {
   height: 34px;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--color-surface-strong);
   color: var(--color-muted);
 }
 
 .account-type-sheet {
-  border-radius: 30px 30px 0 0;
+  border-radius: 28px 28px 0 0;
 }
 
 .balance-update-summary {
@@ -354,7 +359,7 @@ button.eye-button:active {
   gap: 10px;
   min-height: 82px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface-strong);
   padding: 14px;
 }
@@ -399,7 +404,7 @@ button.eye-button:active {
 .settings-row {
   display: flex;
   width: 100%;
-  min-height: 52px;
+  min-height: 50px;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -410,6 +415,7 @@ button.eye-button:active {
   font-weight: 700;
   text-align: left;
   cursor: pointer;
+  box-shadow: 0 0 0 1px var(--color-border);
 }
 
 .action-row.primary {
@@ -441,7 +447,7 @@ button.eye-button:active {
   height: 48px;
   min-height: 48px;
   border: 1px solid var(--color-border);
-  border-radius: 15px;
+  border-radius: 12px;
   background: var(--color-surface-strong);
   color: var(--color-text);
   padding: 0 14px;
@@ -450,7 +456,8 @@ button.eye-button:active {
   line-height: 1.25;
   transition:
     background-color var(--transition-fast) var(--ease-standard),
-    border-color var(--transition-fast) var(--ease-standard);
+    border-color var(--transition-fast) var(--ease-standard),
+    box-shadow var(--transition-fast) var(--ease-standard);
 }
 
 .selected-type-preview {
@@ -476,21 +483,28 @@ button.eye-button:active {
 .field select:focus,
 .field textarea:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.06);
+}
+
+:root[data-theme='dark'] .field input:focus,
+:root[data-theme='dark'] .field select:focus,
+:root[data-theme='dark'] .field textarea:focus {
+  box-shadow: 0 0 0 3px rgba(245, 245, 247, 0.08);
 }
 
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  border-radius: 17px;
+  gap: 6px;
+  border-radius: 14px;
   background: var(--color-surface-strong);
-  padding: 5px;
+  padding: 4px;
 }
 
 .segmented button {
-  min-height: 44px;
+  min-height: 42px;
   border: 0;
-  border-radius: 13px;
+  border-radius: 11px;
   background: transparent;
   color: var(--color-muted);
   font-weight: 700;
@@ -499,7 +513,7 @@ button.eye-button:active {
 .segmented button.active {
   background: var(--color-surface);
   color: var(--color-text);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 
 .sheet-actions {
@@ -521,7 +535,7 @@ button.eye-button:active {
   gap: 16px;
   margin-bottom: 14px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface-strong);
   padding: 16px;
 }
@@ -574,7 +588,7 @@ button.eye-button:active {
   display: grid;
   gap: 10px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   padding: 12px;
 }
@@ -695,8 +709,9 @@ button.eye-button:active {
   inset: 0;
   z-index: 999;
   height: var(--app-height);
-  background: rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   touch-action: manipulation;
   animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
   transition: opacity var(--transition-overlay) var(--ease-exit);

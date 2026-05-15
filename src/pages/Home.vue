@@ -321,13 +321,13 @@ watch(
 .section-heading span {
   color: var(--color-muted);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 620;
   line-height: 1.3;
 }
 
 .accounts-section {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .section-heading {
@@ -335,18 +335,19 @@ watch(
   align-items: end;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 2px;
+  padding: 0 4px;
 }
 
 .section-heading p {
-  margin: 0 0 3px;
+  margin: 0 0 2px;
+  letter-spacing: 0.02em;
 }
 
 .section-heading h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 780;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
   line-height: 1.15;
 }
 

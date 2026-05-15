@@ -317,18 +317,19 @@ watch(
 
 .swipe-action.edit {
   background: #3f7ee8;
+  letter-spacing: 0.01em;
 }
 
 .account-row {
   display: grid;
   width: 100%;
-  min-height: 68px;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  min-height: 66px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   border: 0;
   border-bottom: 1px solid var(--color-border);
-  padding: 10px 14px 10px 12px;
+  padding: 10px 16px 10px 12px;
   background: var(--color-surface);
   text-align: left;
   user-select: none;
@@ -357,9 +358,10 @@ button.account-row:active {
 }
 
 .account-row .account-icon {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   margin-left: 0;
+  border-radius: 12px;
 }
 
 .account-copy {
@@ -371,8 +373,8 @@ button.account-row:active {
 .account-name {
   overflow: hidden;
   font-size: 16px;
-  font-weight: 700;
-  line-height: 1.18;
+  font-weight: 680;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -403,15 +405,14 @@ button.account-row:active {
 
 .account-balance {
   max-width: 148px;
-  border-radius: 999px;
   margin-right: -2px;
-  padding: 4px 6px;
+  padding: 4px 0;
   overflow-wrap: anywhere;
   font-size: 15px;
-  font-weight: 650;
+  font-weight: 620;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
-  line-height: 1.18;
+  line-height: 1.2;
   text-align: right;
   transition:
     background-color var(--transition-list) var(--ease-standard),
@@ -419,21 +420,23 @@ button.account-row:active {
 }
 
 .account-row.changed .account-balance {
-  background: rgba(47, 154, 98, 0.12);
+  background: rgba(47, 154, 98, 0.1);
   color: var(--color-success);
+  border-radius: 8px;
+  padding: 4px 6px;
 }
 
 @media (max-width: 360px) {
   .account-row {
-    grid-template-columns: 38px minmax(0, 1fr) minmax(86px, auto);
-    gap: 8px;
-    padding-right: 10px;
+    grid-template-columns: 40px minmax(0, 1fr) minmax(86px, auto);
+    gap: 10px;
+    padding-right: 12px;
     padding-left: 10px;
   }
 
   .account-row .account-icon {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
   }
 
   .account-balance {

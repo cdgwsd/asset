@@ -116,18 +116,20 @@
       </section>
   </BottomSheet>
 
-  <Transition name="dialog-pop">
-    <ConfirmDialog
-      v-if="confirmAction"
-      :title="confirmAction === 'import' ? '确认导入数据？' : '确认清空全部数据？'"
-      :message="confirmMessage"
-      :confirm-text="confirmAction === 'import' ? '确认导入' : '确认清空'"
-      :busy="importing || clearing"
-      danger
-      @cancel="cancelConfirm"
-      @confirm="handleConfirm"
-    />
-  </Transition>
+  <Teleport to="body">
+    <Transition name="dialog-pop">
+      <ConfirmDialog
+        v-if="confirmAction"
+        :title="confirmAction === 'import' ? '确认导入数据？' : '确认清空全部数据？'"
+        :message="confirmMessage"
+        :confirm-text="confirmAction === 'import' ? '确认导入' : '确认清空'"
+        :busy="importing || clearing"
+        danger
+        @cancel="cancelConfirm"
+        @confirm="handleConfirm"
+      />
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">

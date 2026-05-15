@@ -56,17 +56,18 @@ defineEmits<{
   height: var(--app-height);
   place-items: center;
   padding: 22px;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   animation: overlay-in var(--transition-overlay) var(--ease-standard) backwards;
 }
 
 .confirm-dialog {
-  width: min(100%, 360px);
-  border-radius: 26px;
+  width: min(100%, 340px);
+  border-radius: 20px;
   background: var(--color-surface);
   padding: 22px;
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: dialog-in var(--transition-dialog) var(--ease-standard) backwards;
   will-change: transform, opacity;
 }
@@ -75,6 +76,6 @@ defineEmits<{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 </style>
